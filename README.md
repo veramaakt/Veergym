@@ -24,7 +24,7 @@ Het kopieerscript zet de nieuwste code van de eerste naar de tweede map. Je `.en
    GitHub-inlog; zie "GitHub-toegang" hieronder.
 2. **Sleutels invullen.** Open `Veergym - app/.env` in TextEdit en vul minimaal `APP_PASSWORD` in.
 3. **Starten.** Dubbelklik `start.command` in `Veergym - app`. De eerste keer maakt hij de
-   conda-omgeving `veergym` aan (een paar minuten). Open daarna http://localhost:8000.
+   conda-omgeving `veergym` aan (een paar minuten). Open daarna http://localhost:8321.
 
 Lukt dubbelklikken niet ("kan niet worden geopend")? Klik met rechts op het bestand > Open.
 
@@ -39,18 +39,18 @@ conda env create -f environment.yml
 ```
 
 ```bash
-conda run -n veergym uvicorn veergym.main:app --host 0.0.0.0 --port 8000
+conda run -n veergym uvicorn veergym.main:app --host 0.0.0.0 --port 8321
 ```
 
 ## Op je telefoon
 
-- **Thuis, zelfde wifi:** `start.command` toont een adres als `http://192.168.x.x:8000`. Open dat
+- **Thuis, zelfde wifi:** `start.command` toont een adres als `http://192.168.x.x:8321`. Open dat
   in Chrome op je Android. Dit werkt, maar zonder offline-modus (browsers staan dat alleen toe via https).
 - **Aanrader, ook buiten huis en offline in de sportschool:** installeer [Tailscale](https://tailscale.com)
   (gratis) op je Mac en je telefoon, en zet in Terminal op je Mac eenmalig:
 
   ```bash
-  tailscale serve --bg 8000
+  tailscale serve --bg 8321
   ```
 
   Je krijgt dan een https-adres (iets als `https://jouw-mac.tailnet-naam.ts.net`). Open dat op je
