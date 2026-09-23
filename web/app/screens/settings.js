@@ -1,4 +1,5 @@
-import { html, DS, DEMO, useState } from "../ui.js";
+import { html, DS, DEMO, useState, Switch } from "../ui.js";
+import { fields as measureFields } from "../measure.js";
 import * as store from "../store.js";
 import { time } from "../logic.js";
 
@@ -31,6 +32,14 @@ function Row({ title, sub, children, first }) {
 export function Settings({ ctx }) {
   const [theme, setT] = useState(document.documentElement.dataset.theme || "light");
   const settings = store.get("settings") || {};
+  const [newField, setNewField] = useState("");
+  const addField = () => {
+    const l = newField.trim();
+    if (!l) return;
+    const key = "c_" + l.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    if (!measureFields({ includeHidden: true }).some((f) => f.key === key)) store.put("settings", "settings", { ...settings, measureCustom: [...(settings.measureCustom || []), { key, label: l }] });
+    setNewField("");
+  };
   const restDefault = settings.restDefault ?? 90;
   const notInDemo = () => ctx.toast({ title: "Niet in de demo", detail: "Dit werkt alleen in je echte app.", icon: "close" });
   const exportIt = DEMO ? notInDemo : (path, name) => download(path, name).catch((e) => ctx.toast({ title: "Export lukt niet", detail: navigator.onLine ? e.message : "Exporteren kan alleen online.", icon: "close" }));
@@ -48,6 +57,24 @@ export function Settings({ ctx }) {
       </div>
 
       <div class="section">
+        <div class="title">Metingen</div>
+        <div class="caption" style=${{ margin: "12px 0 8px" }}>Meetschema</div>
+        <div class="chips">${[[7, "Elke week"], [14, "Elke 2 weken"], [28, "Elke 4 weken"]].map(([d, l]) => html`<${DS.Chip} key=${d} selected=${(settings.measureEvery ?? 14) === d} onClick=${() => store.put("settings", "settings", { ...settings, measureEvery: d })}>${l}<//>`)}</div>
+        <${Row} first title="Herinnering" sub="Melding op je beginscherm als een meetmoment eraan komt of gemist is">
+          <${Switch} on=${settings.measureReminder !== false} label="Herinnering meetmoment" onChange=${(on) => store.put("settings", "settings", { ...settings, measureReminder: on })} />
+        <//>
+        <div class="caption" style=${{ margin: "8px 0 8px" }}>Omtrekken die je bijhoudt</div>
+        <div class="chips">${measureFields({ includeHidden: true }).map((f) => {
+          const hidden = (settings.measureHidden || []).includes(f.key);
+          return html`<${DS.Chip} key=${f.key} selected=${!hidden} onClick=${() => store.put("settings", "settings", { ...settings, measureHidden: hidden ? (settings.measureHidden || []).filter((k) => k !== f.key) : [...(settings.measureHidden || []), f.key] })}>${f.label}<//>`;
+        })}</div>
+        <div class="row" style=${{ gap: 8, marginTop: 10 }}>
+          <input class="field" style=${{ height: 44 }} value=${newField} onInput=${(e) => setNewField(e.target.value)} placeholder="Eigen omtrek, bijv. Kuit L" />
+          <${DS.Chip} onClick=${addField}>Toevoegen<//>
+        </div>
+      </div>
+
+      <div class="section">
         <div class="title">Thema</div>
         <div class="chips" style=${{ marginTop: 10 }}>
           <${DS.Chip} selected=${theme === "light"} onClick=${() => { setTheme("light"); setT("light"); }}>Licht<//>
@@ -62,7 +89,7 @@ export function Settings({ ctx }) {
           <${DS.Chip} onClick=${() => exportIt("api/export.json", "veergym.json")}>JSON<//>
         <//>
         <${Row} title="Hevy-historie" sub="CSV uit Hevy importeren"><${DS.Chip} onClick=${DEMO ? notInDemo : () => ctx.go("import")}>Importeren<//><//>
-        <${Row} title="Google Sheet" sub="Metingen uit Gym dashboard · volgende bouwstap"><span class="tag">Later</span><//>
+        <${Row} title="Google Sheet" sub="Metingen uit Gym dashboard (CSV)"><${DS.Chip} onClick=${() => ctx.go("measureImport")}>Importeren<//><//>
       </div>
 
       <div class="section">

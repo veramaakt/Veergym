@@ -87,6 +87,17 @@ def demo_records(now_ms: int) -> list[dict]:
             records.append(rec(wid, "workout", {
                 "title": name, "template": f"demo-tpl-{t_idx}", "start": start, "end": start + rnd.randint(48, 62) * 60000,
                 "rpe": rnd.choice([None, 7, 8]), "note": "", "items": w_items}, start))
+    # Verzonnen metingen, elke 2 weken, met een paar tussentijdse weegmomenten.
+    base = {"borst": 99, "onderborst": 83, "taille": 81, "buik": 91, "heupen": 100, "billen": 104,
+            "bovenbeen_l": 62, "bovenbeen_r": 62, "bovenarm_l": 29, "bovenarm_r": 28.5}
+    change = {"borst": -0.3, "onderborst": -0.4, "taille": -0.5, "buik": -0.6, "heupen": -0.4, "billen": 0.5,
+              "bovenbeen_l": 0.2, "bovenbeen_r": 0.2, "bovenarm_l": 0.1, "bovenarm_r": 0.1}
+    for k in range(8):
+        day = now_ms - (7 * 16 - k * 14) * DAY
+        date = time.strftime("%Y-%m-%d", time.localtime(day / 1000))
+        records.append(rec("m-" + date, "measurement", {
+            "date": date, "weight": round(75.5 - k * 0.25 + rnd.choice([-0.2, 0, 0.2]), 1), "note": "",
+            "fields": {f: round(v + change[f] * k + rnd.choice([-0.5, 0, 0, 0.5]), 1) for f, v in base.items()}}, day))
     return records
 
 
@@ -104,7 +115,8 @@ def build(out: Path = OUT) -> Path:
     (out / "demo-data.js").write_text("window.VEERGYM_DEMO = true;\nwindow.VEERGYM_DEMO_DATA = " + json.dumps(data, ensure_ascii=True) + ";\n")
 
     # Het Artifact-platform zet zelf <html>, <head> en <body> om de pagina heen.
-    (out / "index.html").write_text("""<title>Veergym</title>
+    (out / "index.html").write_text("""<meta charset="utf-8">
+<title>Veergym</title>
 <link rel="stylesheet" href="ds/styles.css">
 <link rel="stylesheet" href="app/app.css">
 <div id="root"></div>

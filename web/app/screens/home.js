@@ -3,6 +3,7 @@ import * as store from "../store.js";
 import { WEEKDAYS, dateLong, dateShort, minutes, kg, volume, doneWorkouts, weekdayLabel, coachSummary } from "../logic.js";
 import { startWorkout, saveActive } from "../session.js";
 import { copyText } from "../clipboard.js";
+import { nextMeasure, fmtDate, settings as appSettings, measureSummary } from "../measure.js";
 
 const FOLDER_PLUS = html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2h9A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"></path><path d="M12 11v5M9.5 13.5h5"></path></svg>`;
 const DAY_NAMES = { Ma: "Maandag", Di: "Dinsdag", Wo: "Woensdag", Do: "Donderdag", Vr: "Vrijdag", Za: "Zaterdag", Zo: "Zondag" };
@@ -57,7 +58,7 @@ function NewFolderSheet({ ctx }) {
 }
 
 function CoachSheet({ ctx }) {
-  const text = coachSummary(ctx.workouts, ctx.exById, 4);
+  const text = coachSummary(ctx.workouts, ctx.exById, 4) + measureSummary(4);
   const [copied, setCopied] = useState(false);
   return html`<div>
     <div class="title">Samenvatting training</div>
@@ -92,6 +93,7 @@ export function Home({ ctx }) {
   };
   const today = planned && planned.offset === 0;
   const recent = doneWorkouts(workouts).slice(0, 3);
+  const measurePlan = nextMeasure();
 
   const newTemplate = () => {
     const id = store.uid();
@@ -145,6 +147,15 @@ export function Home({ ctx }) {
         <//>
       </div>
     </div>
+
+    ${measurePlan.due && appSettings().measureReminder !== false && html`<div class="row" style=${{ gap: 12, marginTop: 32 }}>
+      <${DS.IconBadge} icon="scale" size=${34} fill="var(--accent-pink)" color="var(--accent-pink-ink)" />
+      <div class="flex1">
+        <div class="body">${measurePlan.missed ? "Meetmoment gemist" : "Meetmoment vandaag"}</div>
+        <div class="sub">${measurePlan.last ? `Laatste meting ${fmtDate(measurePlan.last)}` : "Nog geen metingen"}</div>
+      </div>
+      <${DS.Chip} onClick=${() => ctx.go("measureEntry", {})}>Invullen<//>
+    </div>`}
 
     <div style=${{ marginTop: 40 }}>
       <div class="row" style=${{ gap: 4 }}>

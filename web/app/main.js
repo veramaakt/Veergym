@@ -15,6 +15,7 @@ import { Later } from "./screens/later.js";
 import { Progress } from "./screens/progress.js";
 import { Recap } from "./screens/recap.js";
 import { HevyImport } from "./screens/import.js";
+import { Measure, MeasureDetail, MeasureEntry, MeasureImport } from "./screens/measure.js";
 
 const TAB_SCREENS = new Set(["home", "progress", "measure", "food"]);
 
@@ -75,7 +76,10 @@ function App() {
     progress: Progress,
     recap: Recap,
     import: HevyImport,
-    measure: Later,
+    measure: Measure,
+    measureDetail: MeasureDetail,
+    measureEntry: MeasureEntry,
+    measureImport: MeasureImport,
     food: Later,
     workout: Workout,
     summary: Summary,

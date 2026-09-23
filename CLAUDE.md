@@ -18,6 +18,8 @@ Persoonlijke fitness-app (zie `Aangeleverd/vision-brief-fitness-app.md`), design
 - Voortgang/Maandoverzicht rekenen in de browser (`web/app/stats.js`); Hevy-import draait op de server
   (`veergym/hevy.py`, endpoints `/api/import/hevy/preview` en `/api/import/hevy`). Geïmporteerde workouts
   hebben een vast id (`hevy-<hash van starttijd+titel>`), dus herhaald importeren maakt geen dubbelen.
+- Metingen: records `measurement` met id `m-JJJJ-MM-DD` (`web/app/measure.js`); meetschema/velden in het `settings`-record.
+  Import uit Vera's Google Sheet "Gym dashboard" gaat via een CSV-export die de app zelf leest (kopregel met "Datum").
 - `prive/` (gitignored) bevat Vera's persoonlijke testbestanden, zoals haar Hevy-export. Mag gelezen worden
   om te testen, maar komt nooit in git, in tests of in `web/`.
 - In htm: gebruik `autoFocus`/`inputMode` (React-casing) en `<${Fragment}>` i.p.v. `<>`.
