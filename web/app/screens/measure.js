@@ -92,6 +92,15 @@ export function Measure({ ctx }) {
 
     <div class="section" style=${{ marginTop: 20 }}>
       <div class="row" style=${{ gap: 10 }}>
+        <${DS.IconBadge} icon="calendar" size=${30} fill="var(--accent-peach)" color="#211a12" />
+        <div class="flex1"><div class="body">Foto's</div><div class="sub">Voor, zij en achter per meetmoment</div></div>
+        <span class="tag">Binnenkort</span>
+      </div>
+      <div class="sub" style=${{ marginTop: 8 }}>Zie je vooruitgang ook als de cijfers stilstaan. Je vorige foto ligt half doorzichtig over de camera, zodat je steeds precies zo staat, en je zet twee datums naast elkaar.</div>
+    </div>
+
+    <div class="section" style=${{ marginTop: 20 }}>
+      <div class="row" style=${{ gap: 10 }}>
         <${DS.IconBadge} icon="clock" size=${30} fill="var(--accent-lavender)" color="#211a12" />
         <div class="flex1"><div class="body">Slaap en stappen</div><div class="sub">Van je Galaxy Watch 7</div></div>
         <span class="tag">Fase 2</span>
