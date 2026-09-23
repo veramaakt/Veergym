@@ -21,3 +21,10 @@ Persoonlijke fitness-app (zie `Aangeleverd/vision-brief-fitness-app.md`), design
 - Tests: `~/anaconda3/bin/conda run -n veergym python -m pytest -q`
 - Dev-server: `APP_PASSWORD=test VEERGYM_DATA_DIR=<scratch> conda run -n veergym uvicorn veergym.main:app --port 8765 --reload`
 - Deploy: `python tools/deploy.py` (kopieert naar `../Veergym - app`, commit + push naar github.com/veramaakt/Veergym)
+
+## Na elke afgeronde wijziging
+Vera wil niet zelf pushen. Als een wijziging af en getest is, draai:
+`GIT_TERMINAL_PROMPT=0 ~/anaconda3/envs/veergym/bin/python tools/deploy.py -m "<korte omschrijving>"`
+(kopieert naar de app-map en pusht naar GitHub; de token staat in de macOS-sleutelhanger).
+Alleen werkende, geteste code. Stopt de sleutelcontrole? Los de oorzaak op, nooit omzeilen.
+Meld Vera daarna wat er gepusht is en dat ze `start.command` moet herstarten.
