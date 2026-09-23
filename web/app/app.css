@@ -72,10 +72,10 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
 
 /* Kleur per spiergroep, voor de krachtgrafieken op Voortgang. */
 :root {
-  --g-benen: #FF7144; --g-billen: #C94FC9; --g-borst: #334ED8; --g-rug: #2F8F6B;
-  --g-schouders: #7D5CD6; --g-armen: #9A8F0E; --g-core: #3E9A33; --g-cardio: #C9803E; --g-overig: #75664f;
+  --g-benen: #FF7144; --g-billen: #C94FC9; --g-borst: #334ED8; --g-rug: #4FA83A;
+  --g-schouders: #7D5CD6; --g-armen: #9A8F0E; --g-core: #33473B; --g-cardio: #C9803E; --g-overig: #75664f;
 }
 [data-theme="dark"] {
-  --g-benen: #ff7d4d; --g-billen: #e88ce8; --g-borst: #6f88ff; --g-rug: #7fd3b0;
-  --g-schouders: #C7B0FF; --g-armen: #E0E446; --g-core: #C0F0AA; --g-cardio: #FFD2A8; --g-overig: #9a8c7b;
+  --g-benen: #ff7d4d; --g-billen: #e88ce8; --g-borst: #6f88ff; --g-rug: #C0F0AA;
+  --g-schouders: #C7B0FF; --g-armen: #E0E446; --g-core: #9fc2ad; --g-cardio: #FFD2A8; --g-overig: #9a8c7b;
 }
