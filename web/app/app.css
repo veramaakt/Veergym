@@ -83,3 +83,15 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
 /* Pastelkleuren blijven in beide thema's licht; iconen erop zijn daarom altijd donker. */
 :root { --fill-peach: #FFE8D2; }
 .on-pastel-badge > div > div:first-child > div:first-child { color: #211a12 !important; }
+
+/* Stat-vakjes op Voortgang: licht thema zoals het design, donker thema gedempt (kleur in de tekst). */
+:root {
+  --stat-pr-fill: var(--accent-pink); --stat-pr-ink: var(--accent-pink-ink);
+  --stat-sessions-fill: var(--accent-mint); --stat-sessions-ink: var(--accent-mint-ink);
+  --stat-volume-fill: var(--accent-blue-light); --stat-volume-ink: #334ED8;
+}
+[data-theme="dark"] {
+  --stat-pr-fill: #3a2138; --stat-pr-ink: #FFA9FF;
+  --stat-sessions-fill: #26341f; --stat-sessions-ink: #C0F0AA;
+  --stat-volume-fill: #22283d; --stat-volume-ink: #D8E6FF;
+}

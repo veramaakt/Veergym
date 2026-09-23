@@ -58,9 +58,9 @@ export function Progress({ ctx }) {
     </div>
     <div style=${{ marginTop: 24 }}><${DS.RangeSelector} value=${range} onChange=${pickRange} /></div>
     <div style=${{ display: "flex", gap: 8, marginTop: 16 }}>
-      <div style=${{ flex: 1 }}><${DS.StatChip} label="PR's" value=${String(prs)} fill="var(--accent-pink)" color="var(--accent-pink-ink)" /></div>
-      <div style=${{ flex: 1 }}><${DS.StatChip} label="Sessies" value=${String(ws.length)} fill="var(--accent-mint)" color="var(--accent-mint-ink)" /></div>
-      <div style=${{ flex: 1.4 }}><${DS.StatChip} label="Volume" value=${kg(totalVol)} fill="var(--accent-blue-light)" color="var(--accent-blue)" /></div>
+      <div style=${{ flex: 1 }}><${DS.StatChip} label="PR's" value=${String(prs)} fill="var(--stat-pr-fill)" color="var(--stat-pr-ink)" /></div>
+      <div style=${{ flex: 1 }}><${DS.StatChip} label="Sessies" value=${String(ws.length)} fill="var(--stat-sessions-fill)" color="var(--stat-sessions-ink)" /></div>
+      <div style=${{ flex: 1.4 }}><${DS.StatChip} label="Volume" value=${kg(totalVol)} fill="var(--stat-volume-fill)" color="var(--stat-volume-ink)" /></div>
     </div>
 
     <div style=${{ marginTop: 22 }}>
