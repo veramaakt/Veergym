@@ -72,11 +72,22 @@ function CoachSheet({ date }) {
   </div>`;
 }
 
-function Left({ label, value, unit }) {
+/** Dunne, neutrale balk: hoeveel van het doel al gegeten is. Zelfde kleur boven of onder het doel (geen oordeel). */
+function Bar({ eaten, goal, height = 6 }) {
+  const pct = goal > 0 ? Math.min(100, Math.max(0, (eaten / goal) * 100)) : 0;
+  return html`<div role="img" aria-label=${`${Math.round(pct)}% van je doel`}
+    style=${{ height, borderRadius: "var(--radius-pill)", background: "rgba(36,64,26,.16)", overflow: "hidden", marginTop: 6 }}>
+    <div style=${{ width: pct + "%", height: "100%", borderRadius: "var(--radius-pill)", background: "var(--accent-mint-ink)", transition: "width .2s ease" }}></div>
+  </div>`;
+}
+
+function Left({ label, goal, eaten, unit }) {
+  const left = goal - eaten;
   return html`<div>
     <div style=${cap}>${label}</div>
-    <div style=${{ fontSize: "var(--title-size)", lineHeight: "var(--title-line)", fontWeight: 800 }}>${num(Math.abs(Math.round(value)))} ${unit}</div>
-    ${value < 0 && html`<div style=${{ fontSize: "var(--delta-size)", fontWeight: 700 }}>boven doel</div>`}
+    <div style=${{ fontSize: "var(--title-size)", lineHeight: "var(--title-line)", fontWeight: 800 }}>${num(Math.abs(Math.round(left)))} ${unit} <span style=${{ fontSize: "var(--delta-size)", fontWeight: 700 }}>${left < 0 ? "boven" : "over"}</span></div>
+    <div style=${{ fontSize: "var(--delta-size)", lineHeight: "var(--delta-line)", fontWeight: 700 }}>${num(Math.round(eaten))} van ${num(goal)} ${unit}</div>
+    <${Bar} eaten=${eaten} goal=${goal} height=${4} />
   </div>`;
 }
 
@@ -100,12 +111,16 @@ export function Food({ ctx }) {
     </div>
 
     <div style=${{ marginTop: 8, background: "var(--accent-mint)", borderRadius: "var(--radius-lg)", padding: "18px 16px", color: "var(--accent-mint-ink)" }}>
-      <div style=${cap}>${left.kcal < 0 ? "Boven je dagdoel" : "Nog over"}</div>
-      <div style=${{ fontSize: "var(--display-lg-size)", lineHeight: "var(--display-lg-line)", fontWeight: 800, marginTop: 6 }}>${num(Math.abs(Math.round(left.kcal)))}<span style=${{ fontSize: "var(--title-size)", fontWeight: 800 }}> kcal</span></div>
+      <div style=${cap}>${left.kcal < 0 ? "Boven je dagdoel" : "Nog over vandaag"}</div>
+      <div style=${{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+        <span style=${{ fontSize: "var(--display-lg-size)", lineHeight: "var(--display-lg-line)", fontWeight: 800 }}>${num(Math.abs(Math.round(left.kcal)))}<span style=${{ fontSize: "var(--title-size)", fontWeight: 800 }}> kcal</span></span>
+        <span style=${{ fontSize: "var(--body-sm-size)", fontWeight: 700 }}>${num(Math.round(t.kcal))} van ${num(g.kcal)} kcal gegeten</span>
+      </div>
+      <${Bar} eaten=${t.kcal} goal=${g.kcal} height=${8} />
       <div style=${{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginTop: 16 }}>
-        <${Left} label="Eiwit" value=${left.protein} unit="g" />
-        <${Left} label="Vet" value=${left.fat} unit="g" />
-        <${Left} label="Koolhydraten" value=${left.carbs} unit="g" />
+        <${Left} label="Eiwit" goal=${g.protein} eaten=${t.protein} unit="g" />
+        <${Left} label="Vet" goal=${g.fat} eaten=${t.fat} unit="g" />
+        <${Left} label="Koolhydraten" goal=${g.carbs} eaten=${t.carbs} unit="g" />
       </div>
     </div>
     <div class="sub" style=${{ marginTop: 8 }}>Telt vanzelf mee zodra je bij een maaltijd macro's invult. Tik op een maaltijd om te beginnen.</div>
