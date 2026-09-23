@@ -91,7 +91,7 @@ export function Measure({ ctx }) {
 
     <div class="section" style=${{ marginTop: 20 }}>
       <div class="row" style=${{ gap: 10 }}>
-        <${DS.IconBadge} icon="calendar" size=${30} fill="var(--accent-peach)" color="#211a12" />
+        <${DS.IconBadge} icon="calendar" size=${30} fill="var(--fill-peach)" color="#211a12" />
         <div class="flex1"><div class="body">Foto's</div><div class="sub">Voor, zij en achter per meetmoment</div></div>
         <span class="tag">Binnenkort</span>
       </div>

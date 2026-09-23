@@ -9,7 +9,10 @@ export const Fragment = R.Fragment;
 export const DEMO = !!window.VEERGYM_DEMO;
 
 // Oefening-kleuren, in vaste volgorde (design: FILLS).
-export const FILLS = ["var(--accent-peach)", "var(--accent-mint)", "var(--accent-blue-light)", "var(--accent-lavender)", "var(--accent-pink)"];
+// Pastelvlakken met altijd donkere iconen erop; ook in donker thema licht (zie --fill-peach in app.css).
+/** Opgeslagen kleur van een schema, omgezet naar de pastelvariant die in beide thema's licht blijft. */
+export const pastel = (c) => (c === "var(--accent-peach)" ? "var(--fill-peach)" : c);
+export const FILLS = ["var(--fill-peach)", "var(--accent-mint)", "var(--accent-blue-light)", "var(--accent-lavender)", "var(--accent-pink)"];
 
 export function Sheet({ onClose, children }) {
   return html`<div class="sheet-wrap">

@@ -1,4 +1,4 @@
-import { html, DS, FILLS, useEffect, useState, Icon } from "../ui.js";
+import { html, DS, FILLS, pastel, useEffect, useState, Icon } from "../ui.js";
 import * as store from "../store.js";
 import { TYPES, WEEKDAYS, num, time, exMeta, hasValue } from "../logic.js";
 
@@ -65,7 +65,7 @@ export function TemplateEditor({ ctx, params }) {
         </div>
         <div class="label">Icoon en kleur</div>
         <button type="button" class="plainbtn" onClick=${() => setLook(!look)} style=${{ minHeight: 48, display: "flex", alignItems: "center", gap: 12 }}>
-          <${DS.IconBadge} icon=${t.icon || "dumbbell"} size=${40} fill=${t.color || FILLS[0]} color="#211a12" />
+          <${DS.IconBadge} icon=${t.icon || "dumbbell"} size=${40} fill=${pastel(t.color) || FILLS[0]} color="#211a12" />
           <span class="sub" style=${{ fontWeight: 700 }}>${look ? "Klaar met kiezen" : "Tik om te wijzigen"}</span>
         </button>
         ${look && html`<div>
@@ -75,7 +75,7 @@ export function TemplateEditor({ ctx, params }) {
           </button>`)}</div>
           <div class="chips" style=${{ marginTop: 6 }}>${FILLS.map((c) => html`<button type="button" key=${c} aria-label="Kleur" onClick=${() => set({ color: c })}
             style=${{ width: 44, height: 44, border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "grid", placeItems: "center" }}>
-            <span style=${{ width: 30, height: 30, borderRadius: 11, background: c, outline: (t.color || FILLS[0]) === c ? "2px solid var(--ink)" : "none", outlineOffset: 2 }}></span>
+            <span style=${{ width: 30, height: 30, borderRadius: 11, background: c, outline: (pastel(t.color) || FILLS[0]) === c ? "2px solid var(--ink)" : "none", outlineOffset: 2 }}></span>
           </button>`)}</div>
         </div>`}
       </div>

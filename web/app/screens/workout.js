@@ -253,8 +253,8 @@ export function Workout({ ctx }) {
       </div>
       <div style=${{ borderTop: "1px solid var(--border)", paddingTop: 14 }}>
         <div class="caption" style=${{ marginBottom: 10 }}>Oefening ${idx + 1} van ${a.items.length}</div>
-        <${DS.ExerciseHeader} name=${ex.name} meta=${exMeta(ex)} target=${ex.target ? "Doel " + ex.target : null} note=${ex.note || null}
-          badgeFill=${FILLS[idx % FILLS.length]} onMenu=${() => ctx.sheet(html`<${ExMenu} ctx=${ctx} itemIdx=${idx} />`)} />
+        <div class="on-pastel-badge"><${DS.ExerciseHeader} name=${ex.name} meta=${exMeta(ex)} target=${ex.target ? "Doel " + ex.target : null} note=${ex.note || null}
+          badgeFill=${FILLS[idx % FILLS.length]} onMenu=${() => ctx.sheet(html`<${ExMenu} ctx=${ctx} itemIdx=${idx} />`)} /></div>
         ${type === "assist" && html`<div class="sub" style=${{ marginTop: 8 }}>Het gewicht is de assist. Lager is beter.</div>`}
 
         <div class="caption" style=${{ display: "flex", gap: 10, padding: "14px 10px 4px" }}>

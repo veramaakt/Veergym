@@ -79,3 +79,7 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
   --g-benen: #ff7d4d; --g-billen: #e88ce8; --g-borst: #6f88ff; --g-rug: #C0F0AA;
   --g-schouders: #C7B0FF; --g-armen: #E0E446; --g-core: #9fc2ad; --g-cardio: #FFD2A8; --g-overig: #9a8c7b;
 }
+
+/* Pastelkleuren blijven in beide thema's licht; iconen erop zijn daarom altijd donker. */
+:root { --fill-peach: #FFE8D2; }
+.on-pastel-badge > div > div:first-child > div:first-child { color: #211a12 !important; }

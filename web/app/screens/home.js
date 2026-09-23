@@ -1,4 +1,4 @@
-import { html, DS, FILLS, useState, Icon, Switch } from "../ui.js";
+import { html, DS, FILLS, pastel, useState, Icon, Switch } from "../ui.js";
 import * as store from "../store.js";
 import { WEEKDAYS, dateLong, dateShort, minutes, kg, volume, doneWorkouts, weekdayLabel, coachSummary } from "../logic.js";
 import { startWorkout, saveActive } from "../session.js";
@@ -136,13 +136,13 @@ export function Home({ ctx }) {
       <div class="caption" style=${{ color: "#211a12" }}>${dateLong(now)}</div>
       <div style=${{ fontSize: "var(--display-lg-size)", lineHeight: "var(--display-lg-line)", fontWeight: 800, marginTop: 6 }}>${heroTitle}</div>
       <div style=${{ marginTop: 24 }}>
-        <${DS.GlassPanel} tone="light">
+        <${DS.GlassPanel} tone="light" style=${{ color: "#211a12" }}>
           <div class="row">
             <div class="flex1">
               <div style=${{ fontSize: "var(--body-sm-size)", lineHeight: "var(--body-sm-line)", fontWeight: 700 }}>${panel.label}</div>
               <div class="title">${panel.name}</div>
             </div>
-            <${DS.Button} onClick=${panel.onClick}>${panel.btn}<//>
+            <${DS.Button} onClick=${panel.onClick} style=${{ background: "#211a12", color: "#ffffff" }}>${panel.btn}<//>
           </div>
         <//>
       </div>
@@ -187,7 +187,7 @@ export function Home({ ctx }) {
           ${open && html`<div>
             ${g.items.map((t, i) => html`<div key=${t.id} class="row" style=${{ padding: "6px 0" }}>
               <button type="button" class="plainbtn flex1" style=${{ minHeight: 48, display: "flex", alignItems: "center", gap: 12 }} onClick=${() => ctx.go("template", { id: t.id })}>
-                <${DS.IconBadge} icon=${t.icon || "dumbbell"} size=${34} fill=${t.color || FILLS[i % FILLS.length]} color="#211a12" />
+                <${DS.IconBadge} icon=${t.icon || "dumbbell"} size=${34} fill=${pastel(t.color) || FILLS[i % FILLS.length]} color="#211a12" />
                 <span style=${{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                   <span class="body">${t.name || "Naamloos schema"}</span>
                   <span class="sub">${[(t.days || []).filter((d) => WEEKDAYS.includes(d)).join(" · "), `${(t.items || []).length} oefeningen`].filter(Boolean).join(" · ")}</span>
