@@ -10,11 +10,11 @@ export const MONTHS_LONG = ["januari", "februari", "maart", "april", "mei", "jun
 const DAY_SHORT = ["zo", "ma", "di", "wo", "do", "vr", "za"];
 
 export const METRICS = {
-  kg: ["Zwaarste gewicht", "Geschat 1RM"],
-  assist: ["Laagste assist"],
-  reps: ["Meeste reps"],
-  duur: ["Langste tijd"],
-  afstand: ["Verste afstand"],
+  kg: ["Zwaarste gewicht", "Geschat 1RM", "Meeste reps"],
+  assist: ["Laagste assist", "Meeste reps"],
+  reps: ["Meeste reps", "Totaal reps"],
+  duur: ["Langste tijd", "Totale tijd"],
+  afstand: ["Verste afstand", "Totale tijd"],
 };
 
 export function inRange(workouts, range, now = Date.now()) {
@@ -22,21 +22,32 @@ export function inRange(workouts, range, now = Date.now()) {
   return doneWorkouts(workouts).filter((w) => w.start >= from && w.start <= now);
 }
 
+/** Beste waarde van één sessie voor de gekozen meetwaarde. */
 export function sessionValue(type, sets, metric) {
   const b = bests(type, sets);
-  if (type === "assist") return b.minW;
-  if (type === "reps") return b.maxR || null;
-  if (type === "duur") return b.maxDur || null;
-  if (type === "afstand") return b.maxDist || null;
-  if (metric === "Geschat 1RM") return b.e1rm ? Math.round(b.e1rm * 2) / 2 : null;
-  return b.maxW;
+  const counted = sets.filter((s) => s.type !== "warmup");
+  const sum = (k) => counted.reduce((n, s) => n + (Number(s[k]) || 0), 0) || null;
+  switch (metric) {
+    case "Meeste reps": return b.maxR || null;
+    case "Totaal reps": return sum("r");
+    case "Totale tijd": return sum("dur");
+    case "Geschat 1RM": return b.e1rm ? Math.round(b.e1rm * 2) / 2 : null;
+    case "Laagste assist": return b.minW;
+    case "Langste tijd": return b.maxDur || null;
+    case "Verste afstand": return b.maxDist || null;
+    default: return b.maxW;
+  }
 }
 
-export function formatMetric(type, v) {
+/** Is een lagere waarde beter? Alleen bij het assist-gewicht. */
+export const lowerIsBetter = (metric) => metric === "Laagste assist";
+
+export function formatMetric(type, v, metric) {
   const n = new Intl.NumberFormat("nl-NL", { maximumFractionDigits: 1 }).format(v);
-  if (type === "duur") return `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, "0")}`;
-  if (type === "afstand") return n + " km";
-  if (type === "reps") return n + " reps";
+  if (metric === "Meeste reps" || metric === "Totaal reps") return n + " reps";
+  if (metric === "Langste tijd" || metric === "Totale tijd") return `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, "0")}`;
+  if (metric === "Verste afstand") return n + " km";
+  if (metric === "Laagste assist") return n + " kg assist";
   return n + " kg";
 }
 
@@ -59,10 +70,11 @@ export function strengthCharts(ws, exById, metricFor) {
     if (sessions.length < 2) continue;
     const ex = exById[id];
     const type = ex.type || "kg";
-    const metric = metricFor(id) || METRICS[type][0];
+    const chosen = metricFor(id);
+    const metric = METRICS[type].includes(chosen) ? chosen : METRICS[type][0];
     const points = sessions.map((s) => ({ at: s.w.start, v: sessionValue(type, s.sets, metric) })).filter((p) => p.v !== null && p.v !== undefined);
     if (points.length < 2) continue;
-    const lowerBetter = type === "assist";
+    const lowerBetter = lowerIsBetter(metric);
     const first = points[0].v;
     const last = points[points.length - 1].v;
     const pct = first ? Math.round(((last - first) / first) * 100) : 0;
