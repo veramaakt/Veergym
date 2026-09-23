@@ -95,6 +95,9 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
   --stat-sessions-fill: #26341f; --stat-sessions-ink: #C0F0AA;
   --stat-volume-fill: #22283d; --stat-volume-ink: #D8E6FF;
 }
+/* Eten: kcal-blok in lavendel, macro's in dezelfde kleuren als de stat-vakjes op Voortgang. */
+:root { --food-hero-fill: var(--accent-lavender); --food-hero-ink: #211a12; }
+[data-theme="dark"] { --food-hero-fill: #2c2640; --food-hero-ink: #DCD0FF; }
 
 /* Maaltijdblokken op Eten: het hele blok is aantikbaar; icoon op pastel altijd donker. */
 .meal-tap { cursor: pointer; border-radius: var(--radius-md); }

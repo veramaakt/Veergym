@@ -73,28 +73,28 @@ function CoachSheet({ date }) {
 }
 
 /** Dunne, neutrale balk: hoeveel van het doel al gegeten is. Zelfde kleur boven of onder het doel (geen oordeel). */
-function Bar({ eaten, goal, height = 6, ink = "var(--accent-mint-ink)" }) {
+function Bar({ eaten, goal, height = 6 }) {
   const pct = goal > 0 ? Math.min(100, Math.max(0, (eaten / goal) * 100)) : 0;
   return html`<div role="img" aria-label=${`${Math.round(pct)}% van je doel`}
-    style=${{ height, borderRadius: "var(--radius-pill)", background: "rgba(33,26,18,.12)", overflow: "hidden", marginTop: 6 }}>
-    <div style=${{ width: pct + "%", height: "100%", borderRadius: "var(--radius-pill)", background: ink, transition: "width .2s ease" }}></div>
+    style=${{ height, borderRadius: "var(--radius-pill)", background: "color-mix(in srgb, currentColor 16%, transparent)", overflow: "hidden", marginTop: 6 }}>
+    <div style=${{ width: pct + "%", height: "100%", borderRadius: "var(--radius-pill)", background: "currentColor", transition: "width .2s ease" }}></div>
   </div>`;
 }
 
 // Elke macro een eigen pastelblokje. Kleur is alleen herkenning, nooit een oordeel (boven doel = zelfde kleur).
 const MACRO_TILES = [
-  { key: "protein", label: "Eiwit", fill: "var(--fill-peach)" },
-  { key: "fat", label: "Vet", fill: "var(--accent-lavender)" },
-  { key: "carbs", label: "Koolhydraten", fill: "var(--accent-blue-light)" },
+  { key: "protein", label: "Eiwit", fill: "var(--stat-pr-fill)", ink: "var(--stat-pr-ink)" },
+  { key: "fat", label: "Vet", fill: "var(--stat-sessions-fill)", ink: "var(--stat-sessions-ink)" },
+  { key: "carbs", label: "Koolhydraten", fill: "var(--stat-volume-fill)", ink: "var(--stat-volume-ink)" },
 ];
 
-function MacroTile({ label, fill, goal, eaten }) {
+function MacroTile({ label, fill, ink, goal, eaten }) {
   const left = goal - eaten;
-  return html`<div style=${{ background: fill, color: "#211a12", borderRadius: "var(--radius-md)", padding: "12px 12px 14px", minWidth: 0 }}>
+  return html`<div style=${{ background: fill, color: ink, borderRadius: "var(--radius-md)", padding: "12px 12px 14px", minWidth: 0 }}>
     <div style=${{ ...cap, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>${label}</div>
     <div style=${{ fontSize: "var(--title-size)", lineHeight: "var(--title-line)", fontWeight: 800, marginTop: 4 }}>${num(Math.abs(Math.round(left)))} g</div>
     <div style=${{ fontSize: "var(--delta-size)", lineHeight: "var(--delta-line)", fontWeight: 700 }}>${left < 0 ? "boven doel" : "over"}</div>
-    <${Bar} eaten=${eaten} goal=${goal} height=${4} ink="#211a12" />
+    <${Bar} eaten=${eaten} goal=${goal} height=${4} />
     <div style=${{ fontSize: "var(--delta-size)", lineHeight: "var(--delta-line)", fontWeight: 600, marginTop: 6, opacity: 0.75 }}>${num(Math.round(eaten))} van ${num(goal)} g</div>
   </div>`;
 }
@@ -118,7 +118,7 @@ export function Food({ ctx }) {
       <button type="button" class="iconbtn" aria-label="Volgende dag" onClick=${() => go(1)}><span style=${{ display: "grid", transform: "rotate(-90deg)" }}>${Icon("chevron-down", 20)}</span></button>
     </div>
 
-    <div style=${{ marginTop: 8, background: "var(--accent-mint)", borderRadius: "var(--radius-lg)", padding: "18px 16px", color: "var(--accent-mint-ink)" }}>
+    <div style=${{ marginTop: 8, background: "var(--food-hero-fill)", borderRadius: "var(--radius-lg)", padding: "18px 16px", color: "var(--food-hero-ink)" }}>
       <div style=${cap}>${left.kcal < 0 ? "Boven je dagdoel" : "Nog over vandaag"}</div>
       <div style=${{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
         <span style=${{ fontSize: "var(--display-lg-size)", lineHeight: "var(--display-lg-line)", fontWeight: 800 }}>${num(Math.abs(Math.round(left.kcal)))}<span style=${{ fontSize: "var(--title-size)", fontWeight: 800 }}> kcal</span></span>
@@ -127,7 +127,7 @@ export function Food({ ctx }) {
       <${Bar} eaten=${t.kcal} goal=${g.kcal} height=${8} />
     </div>
     <div style=${{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8, marginTop: 8 }}>
-      ${MACRO_TILES.map((m) => html`<${MacroTile} key=${m.key} label=${m.label} fill=${m.fill} goal=${g[m.key]} eaten=${t[m.key]} />`)}
+      ${MACRO_TILES.map((m) => html`<${MacroTile} key=${m.key} label=${m.label} fill=${m.fill} ink=${m.ink} goal=${g[m.key]} eaten=${t[m.key]} />`)}
     </div>
     <div class="sub" style=${{ marginTop: 8 }}>Telt vanzelf mee zodra je bij een maaltijd macro's invult. Tik op een maaltijd om te beginnen.</div>
 

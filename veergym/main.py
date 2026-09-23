@@ -5,7 +5,7 @@ import time
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import Session
 
 from . import __version__
@@ -146,6 +146,41 @@ def food_estimate(req: EstimateRequest):
     """Schat de macro's van één maaltijd met Claude. De sleutel blijft op de server."""
     try:
         return nutrition.estimate(req.note, req.context).model_dump()
+    except nutrition.EstimateError as e:
+        raise HTTPException(e.status, str(e))
+
+
+class Profile(BaseModel):
+    history: list[str] = Field(default=[], max_length=200)
+    pantry: str = Field(default="", max_length=4000)
+    likes: list[str] = Field(default=[], max_length=50)
+    dislikes: list[str] = Field(default=[], max_length=50)
+    context: str = Field(default="", max_length=2000)
+
+
+class SuggestRequest(Profile):
+    left: dict[str, float]
+    today: list[str] = Field(default=[], max_length=20)
+
+
+class WeekRequest(Profile):
+    week: str = Field(max_length=20000)
+
+
+@app.post("/api/food/suggest", dependencies=[Depends(require_auth)])
+def food_suggest(req: SuggestRequest):
+    """Eettips voor de rest van de dag, op basis van wat je nog over hebt en wat je graag eet."""
+    try:
+        return nutrition.suggest(req.left, req.today, req.history, req.pantry, req.likes, req.dislikes, req.context).model_dump()
+    except nutrition.EstimateError as e:
+        raise HTTPException(e.status, str(e))
+
+
+@app.post("/api/food/week", dependencies=[Depends(require_auth)])
+def food_week(req: WeekRequest):
+    """Weekoverzicht met tips en maaltijdideeën voor volgende week."""
+    try:
+        return nutrition.week_review(req.week, req.history, req.pantry, req.likes, req.dislikes, req.context).model_dump()
     except nutrition.EstimateError as e:
         raise HTTPException(e.status, str(e))
 
