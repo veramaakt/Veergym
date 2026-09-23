@@ -40,7 +40,7 @@ export function Summary({ ctx, params }) {
         <div class="title">Nieuwe records</div>
         <div style=${{ marginTop: 6 }}>
           ${prs.map((p, i) => html`<${DS.ListRow} key=${p.exercise} first=${i === 0} icon="trend" badgeFill="var(--accent-mint)"
-            name=${exById[p.exercise]?.name} sub=${p.labels.join(", ")} value=${fmtSet(exById[p.exercise]?.type, p.set)} />`)}
+            name=${exById[p.exercise]?.name} sub=${p.labels.join(", ")} value=${fmtSet(exById[p.exercise]?.type, p.set, true)} />`)}
         </div>
       </div>`}
 

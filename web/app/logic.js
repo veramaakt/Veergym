@@ -61,8 +61,13 @@ export function hasValue(v) {
   return v !== null && v !== undefined && v !== "" && !Number.isNaN(Number(v));
 }
 
-export function fmtSet(type, s) {
+/**
+ * Eén set als tekst, zonder "×" (dat leest als een som):
+ * "140 kg · 10 reps", kort: "140 kg · 10". Assisted: "18 kg assist · 7 reps".
+ */
+export function fmtSet(type, s, short = false) {
   if (!s) return "";
+  const reps = (r) => `${num(r)}${short ? "" : num(r) === "1" ? " rep" : " reps"}`;
   switch (type) {
     case "reps":
       return hasValue(s.r) ? `${num(s.r)} reps` : "";
@@ -70,10 +75,35 @@ export function fmtSet(type, s) {
       return hasValue(s.dur) ? time(s.dur) : "";
     case "afstand":
       return [hasValue(s.dist) ? `${num(s.dist)} km` : "", hasValue(s.dur) ? time(s.dur) : ""].filter(Boolean).join(" · ");
-    default:
-      if (!hasValue(s.w)) return hasValue(s.r) ? `${num(s.r)} reps` : "";
-      return hasValue(s.r) ? `${num(s.w)} × ${num(s.r)}` : `${num(s.w)} kg`;
+    default: {
+      const w = hasValue(s.w) ? `${num(s.w)} kg${type === "assist" && !short ? " assist" : ""}` : "";
+      return [w, hasValue(s.r) ? reps(s.r) : ""].filter(Boolean).join(" · ");
+    }
   }
+}
+
+/**
+ * Meerdere sets van één oefening, samengevat per gewicht:
+ * "3 sets van 12 reps op 41 kg" of "12, 9, 7 reps op 140 kg · 10 reps op 135 kg".
+ */
+export function fmtSets(type, sets) {
+  const list = (sets || []).filter(Boolean);
+  if (!list.length) return "";
+  if (type !== "kg" && type !== "assist") return list.map((s) => (s.type === "warmup" ? "warming-up " : "") + fmtSet(type, s)).join(", ");
+  const groups = [];
+  for (const s of list) {
+    const key = (s.type === "warmup" ? "w" : "") + (hasValue(s.w) ? Number(s.w) : "");
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) last.sets.push(s);
+    else groups.push({ key, sets: [s], w: s.w, warmup: s.type === "warmup" });
+  }
+  return groups.map((g) => {
+    const reps = g.sets.map((s) => (hasValue(s.r) ? num(s.r) : "–"));
+    const allSame = reps.length > 1 && reps.every((r) => r === reps[0]);
+    const what = allSame ? `${reps.length} sets van ${reps[0]} reps` : `${reps.join(", ")} ${reps.length === 1 && reps[0] === "1" ? "rep" : "reps"}`;
+    const load = hasValue(g.w) ? ` op ${num(g.w)} kg${type === "assist" ? " assist" : ""}` : "";
+    return (g.warmup ? "warming-up: " : "") + what + load;
+  }).join(" · ");
 }
 
 export function exMeta(ex) {
@@ -216,7 +246,7 @@ export function coachSummary(workouts, exById, weeks = 4, now = Date.now()) {
     lines.push(`${dateShort(w.start)} · ${w.title}${extra ? " · " + extra : ""}`);
     for (const it of w.items || []) {
       const type = exById[it.exercise]?.type;
-      lines.push(`  ${name(it.exercise)}: ${(it.sets || []).map((s) => (s.type === "warmup" ? "(w) " : "") + fmtSet(type, s)).join(", ")}`);
+      lines.push(`  ${name(it.exercise)}: ${fmtSets(type, it.sets)}`);
     }
     if (w.note) lines.push(`  Notitie: ${w.note}`);
   }

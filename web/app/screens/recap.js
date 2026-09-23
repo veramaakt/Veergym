@@ -79,7 +79,7 @@ export function Recap({ ctx, params }) {
       ${r.records.length > 0 && html`<div class="section" style=${{ marginTop: 20, paddingTop: 16 }}>
         ${head("trend", "var(--accent-orange)", "var(--accent-orange-ink)", "Personal records")}
         <div style=${{ marginTop: 8 }}>${r.records.map((p, i) => html`<button type="button" key=${p.exercise} class="plainbtn" style=${{ width: "100%" }} onClick=${() => ctx.go("exercise", { id: p.exercise })}>
-          <${DS.ListRow} first=${i === 0} name=${ctx.exById[p.exercise]?.name} tags=${[...new Set(p.labels.map(tag))]} value=${fmtSet(ctx.exById[p.exercise]?.type, p.set)} />
+          <${DS.ListRow} first=${i === 0} name=${ctx.exById[p.exercise]?.name} tags=${[...new Set(p.labels.map(tag))]} value=${fmtSet(ctx.exById[p.exercise]?.type, p.set, true)} />
         </button>`)}</div>
       </div>`}
 

@@ -1,8 +1,9 @@
 import { html, DS, useState, useEffect } from "../ui.js";
 import * as store from "../store.js";
-import { num, time, fmtSet, exMeta, exerciseHistory, bests, workoutPrs, dateNum, TYPES } from "../logic.js";
+import { num, time, fmtSets, exMeta, exerciseHistory, bests, workoutPrs, dateNum, TYPES, GROUPS } from "../logic.js";
 
 const REST_OPTIONS = [null, 0, 30, 60, 90, 120, 180, 240];
+const HIST_SHOWN = 5;
 const restLabel = (v) => (v === null ? "Standaard" : v === 0 ? "Geen" : time(v));
 
 /** Beste waarde per sessie, voor de grafiek. */
@@ -20,6 +21,7 @@ const CHART_TITLE = { kg: "Zwaarste set per sessie", assist: "Assist per sessie"
 export function ExerciseDetail({ ctx, params }) {
   const ex = store.get(params.id);
   const [note, setNote] = useState(ex?.note || "");
+  const [allHist, setAllHist] = useState(false);
   useEffect(() => { if (!ex) ctx.back(); }, [ex]);
   if (!ex) return null;
 
@@ -52,6 +54,8 @@ export function ExerciseDetail({ ctx, params }) {
         <div class="title">Vaste notitie</div>
         <div class="sub">Staat bij elke sessie boven je sets</div>
         <textarea class="field" style=${{ marginTop: 10, minHeight: 72 }} value=${note} onInput=${(e) => setNote(e.target.value)} onBlur=${saveNote} placeholder="Stoelstand, repbereik, aanwijzingen"></textarea>
+        <div class="caption" style=${{ margin: "14px 0 8px" }}>Spiergroep</div>
+        <div class="chips">${GROUPS.map((g) => html`<${DS.Chip} key=${g} selected=${ex.group === g} onClick=${() => store.update(ex.id, { group: g })}>${g}<//>`)}</div>
         <div class="caption" style=${{ margin: "14px 0 8px" }}>Rust na elke set</div>
         <div class="chips">${REST_OPTIONS.map((v) => html`<${DS.Chip} key=${String(v)} selected=${(ex.rest ?? null) === v} onClick=${() => store.update(ex.id, { rest: v })}>${restLabel(v)}<//>`)}</div>
       </div>
@@ -69,15 +73,18 @@ export function ExerciseDetail({ ctx, params }) {
         <div class="section">
           <div class="title">Geschiedenis</div>
           <div style=${{ marginTop: 4 }}>
-            ${hist.map((h, i) => {
+            ${(allHist ? hist : hist.slice(0, HIST_SHOWN)).map((h, i) => {
               const pr = workoutPrs(h.workout, ctx.workouts, ctx.exById).some((p) => p.exercise === ex.id);
               return html`<div key=${h.workout.id} style=${{ display: "flex", alignItems: "baseline", gap: 10, padding: "10px 0", borderTop: i ? "1px solid var(--border)" : "none", fontSize: "var(--body-sm-size)", lineHeight: "var(--body-sm-line)" }}>
                 <span style=${{ flex: "none", width: 52, fontWeight: 600, color: "var(--ink-soft)" }}>${dateNum(h.workout.start)}</span>
-                <span class="flex1" style=${{ fontWeight: 700 }}>${h.sets.map((s) => fmtSet(type, s)).join(", ")}</span>
+                <span class="flex1" style=${{ fontWeight: 700 }}>${fmtSets(type, h.sets)}</span>
                 ${pr && html`<span class="pr-badge">PR</span>`}
               </div>`;
             })}
           </div>
+          ${hist.length > HIST_SHOWN && html`<div style=${{ marginTop: 8 }}>
+            <${DS.Chip} onClick=${() => setAllHist(!allHist)}>${allHist ? "Minder tonen" : `Alle ${hist.length} sessies tonen`}<//>
+          </div>`}
         </div>
       </div>` : html`<div class="section"><${DS.EmptyState} icon="trend" title="Nog geen geschiedenis" body="Na je eerste sessie zie je hier je sets en records." /></div>`}
 

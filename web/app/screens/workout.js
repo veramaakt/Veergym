@@ -264,7 +264,7 @@ export function Workout({ ctx }) {
         </div>
         ${item.sets.map((s, i) => html`<div key=${i} class="altrow" style=${{ marginTop: 4, background: s.done ? "var(--accent-mint-soft)" : "transparent" }}>
           <div style=${{ width: 22, flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 700, color: "var(--ink-soft)" }}>${setIndexLabel(item.sets, i)}</div>
-          <div class="flex1 sub">${fmtSet(type, prev[i]) || "–"}</div>
+          <div class="flex1 sub">${fmtSet(type, prev[i], true) || "–"}</div>
           ${fields.map((f) => html`<${DS.ValueField} key=${f.k} value=${showValue(f, s[f.k])} placeholder=${showValue(f, (prev[i] || {})[f.k]) || "–"} active=${s.done} onClick=${() => openSet(i)} />`)}
           <${Check} done=${s.done} onClick=${() => toggle(i)} />
         </div>`)}
