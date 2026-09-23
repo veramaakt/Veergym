@@ -1,0 +1,12 @@
+:root{
+  --font-sans:"Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --display-lg-size:34px;   --display-lg-line:38px;   --display-lg-weight:800;
+  --display-md-size:25px;   --display-md-line:30px;   --display-md-weight:800;
+  --title-size:18px;        --title-line:23px;        --title-weight:800;
+  --body-md-size:14px;      --body-md-line:20px;      --body-md-weight:600;
+  --body-sm-size:12.5px;    --body-sm-line:18px;      --body-sm-weight:600;
+  --caption-size:10px;      --caption-line:14px;      --caption-weight:700;
+  --delta-size:11px;        --delta-line:15px;        --delta-weight:700;
+  --button-size:13px;       --button-line:18px;       --button-weight:800;
+  --chip-size:12px;         --chip-line:16px;         --chip-weight:700;
+}

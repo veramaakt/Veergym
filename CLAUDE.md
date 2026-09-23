@@ -1,0 +1,23 @@
+# Veergym — notities voor Claude
+
+**Harde regel:** kijk NOOIT in `../Veergym - app` (`/Users/jansen/Documents/Vibe coding/Veergym/Veergym - app`).
+Daar staan Vera's geheime sleutels (`.env`) en haar echte data. Niet lezen, niet listen, niet greppen,
+ook niet via scripts of subagents die inhoud tonen. Test het deployscript altijd met `--target` naar een tijdelijke map.
+
+## Wat is dit
+Persoonlijke fitness-app (zie `Aangeleverd/vision-brief-fitness-app.md`), design in `docs/design/Gymveer.dc.html`
+(Claude Design-project `4d5b8650-1971-4f01-9da6-027af15dd538`).
+
+- Backend: Python 3.12 in conda-env `veergym` (`environment.yml`), FastAPI + SQLModel/SQLite. Code in `veergym/`.
+  Eén tabel `Record` (kind, id, data-JSON, updated_at, deleted, seq); sync = laatste wijziging wint (`veergym/sync.py`).
+- Frontend: PWA zonder bouwstap in `web/`: React UMD + htm + design-system-bundle `web/ds/ds_bundle.js`
+  (componenten via `window.DesignSystem_de9512`). Lokale opslag in IndexedDB (`web/app/store.js`), sync in `web/app/sync.js`.
+  Nieuw bestand in `web/`? Voeg het toe aan `SHELL` in `web/sw.js` en verhoog `VERSION`.
+- Workout-records bevatten hun sets: `{title, template, start, end, rpe, note, items:[{exercise, sets:[{type,w,r,dur,dist,rpe}]}]}`.
+- Oefeningtypes: kg, assist (lager is beter), reps, duur, afstand.
+- In htm: gebruik `autoFocus`/`inputMode` (React-casing) en `<${Fragment}>` i.p.v. `<>`.
+
+## Commando's
+- Tests: `~/anaconda3/bin/conda run -n veergym python -m pytest -q`
+- Dev-server: `APP_PASSWORD=test VEERGYM_DATA_DIR=<scratch> conda run -n veergym uvicorn veergym.main:app --port 8765 --reload`
+- Deploy: `python tools/deploy.py` (kopieert naar `../Veergym - app`, commit + push naar github.com/veramaakt/Veergym)

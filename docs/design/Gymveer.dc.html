@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Gymveer — prototype</title>
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/tokens/colors.css">
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/tokens/typography.css">
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/tokens/radius.css">
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/tokens/shadows.css">
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/tokens/base.css">
+<link rel="stylesheet" href="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/styles.css">
+<script src="_ds/design-system-de95124f-50e4-4942-985f-749cbbd27766/_ds_bundle.js"></script>
+<script src="gymveer-clock.js"></script>
+<style>
+body{margin:0;font-family:var(--font-sans)}
+a{color:var(--ink);text-decoration:underline}
+a:hover{color:var(--ink-soft)}
+input::placeholder,textarea::placeholder{color:var(--ink-soft)}
+*{scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:28px;padding:26px;box-sizing:border-box;background:{{ pageBg }};font-family:var(--font-sans)">
+
+  <div data-theme="{{ theme }}" style="width:220px;flex:none;padding-top:8px;display:flex;flex-direction:column;gap:14px;color:var(--ink)">
+    <div>
+      <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800">Gymveer</div>
+      <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:6px;text-wrap:pretty">Klikbaar prototype, mobiel. Tik op kg of reps om een set aan te passen; meer dan je beste geeft een PR-melding.</div>
+    </div>
+    <div>
+      <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Schermen</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{ sideScreens }}" as="s" hint-placeholder-count="12">
+          <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ s.on }}" onClick="{{ s.go }}" hint-size="auto,40px">{{ s.label }}</x-import>
+        </sc-for>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Simuleren</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ isDark }}" onClick="{{ toggleTheme }}" hint-size="auto,40px">Donker thema</x-import>
+        <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ isOffline }}" onClick="{{ toggleOnline }}" hint-size="auto,40px">Geen bereik</x-import>
+        <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ sendPush }}" hint-size="auto,40px">Push: maandoverzicht</x-import>
+      </div>
+    </div>
+    <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);border-top:1px solid var(--border);padding-top:12px;text-wrap:pretty">Onderdelen met het label "Fase 2" zijn schetsen: horlogedata en macro-schatting.</div>
+  </div>
+
+  <div data-theme="{{ theme }}" style="width:390px;height:800px;flex:none;border-radius:44px;border:11px solid #17130f;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;position:relative;background:var(--surface-primary);color:var(--ink);font-family:var(--font-sans);display:flex;flex-direction:column">
+
+    <div style="flex:1;min-height:0;position:relative">
+
+      <sc-if value="{{ is.home }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;inset:0;overflow-y:auto;padding:18px 16px 24px" data-comment-anchor="e0ec4fd8d3-div">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Gymveer</div>
+            <button type="button" onClick="{{ openSettings }}" aria-label="Instellingen" style="width:44px;height:44px;border:none;background:transparent;padding:0;display:grid;place-items:center;cursor:pointer;margin-right:-6px">
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--accent-lavender);color:#211a12;display:grid;place-items:center;font-size:var(--body-md-size);font-weight:800;font-family:var(--font-sans)">V</span>
+            </button>
+          </div>
+          <div style="margin-top:2px"><x-import component-from-global-scope="DesignSystem_de9512.SyncStatus" mode="{{ syncMode }}" hint-size="auto,24px"></x-import></div>
+
+          <div style="margin-top:20px;background:var(--accent-lavender);border-radius:var(--radius-lg);padding:20px 16px 16px;color:#211a12" data-comment-anchor="337e3eab69-div">
+            <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase">Woensdag 23 september</div>
+            <div style="font-size:var(--display-lg-size);line-height:var(--display-lg-line);font-weight:800;margin-top:6px">Rustdag</div>
+            <div style="margin-top:24px"><x-import component-from-global-scope="DesignSystem_de9512.GlassPanel" tone="light" hint-size="100%,96px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:700">Volgende training</div>
+                  <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Donderdag · {{ nextTpl.name }}</div>
+                </div>
+                <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ nextTpl.start }}" hint-size="auto,44px">Start</x-import>
+              </div>
+            </x-import></div>
+          </div>
+
+          <sc-if value="{{ measureDue }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:12px;margin-top:32px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="scale" size="{{ 34 }}" fill="var(--accent-pink)" color="var(--accent-pink-ink)" hint-size="34px,34px"></x-import>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Meetmoment vandaag</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Laatste meting 9 september</div>
+              </div>
+              <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ openMeasureEntry }}" hint-size="auto,40px">Invullen</x-import>
+            </div>
+          </sc-if>
+
+          <div style="margin-top:40px" data-comment-anchor="e25d26dc6e-div">
+            <div style="display:flex;align-items:center;gap:4px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Schema's</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Tik op een schema om het te bewerken</div>
+              </div>
+              <div style="display:flex;gap:2px;margin-right:-4px" data-comment-anchor="c131a747fd-div">
+                <button type="button" onClick="{{ newFolder }}" aria-label="Nieuw mapje" title="Nieuw mapje" style="width:44px;height:44px;border:none;background:transparent;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--ink)"><span style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--surface-tint);display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2h9A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"></path><path d="M12 11v5M9.5 13.5h5"></path></svg></span></button>
+                <button type="button" onClick="{{ newTemplate }}" aria-label="Nieuw schema" title="Nieuw schema" style="width:44px;height:44px;border:none;background:transparent;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--ink)"><span style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--surface-tint);display:grid;place-items:center"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="plus" size="{{ 18 }}" hint-size="18px,18px"></x-import></span></button>
+              </div>
+            </div>
+            <sc-for list="{{ folders }}" as="fo" hint-placeholder-count="2">
+              <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:4px">
+                <button type="button" onClick="{{ fo.toggle }}" style="width:100%;min-height:44px;display:flex;align-items:center;gap:8px;border:none;background:transparent;padding:0;cursor:pointer;color:var(--ink);font-family:inherit;text-align:left">
+                  <span style="display:grid;place-items:center;color:var(--ink-soft);transform:{{ fo.chevron }}"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="chevron-down" size="{{ 18 }}" hint-size="18px,18px"></x-import></span>
+                  <span style="flex:1;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ fo.name }}</span>
+                  <span style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ fo.count }}</span>
+                </button>
+                <sc-if value="{{ fo.open }}" hint-placeholder-val="{{ true }}">
+                  <div>
+                    <sc-for list="{{ fo.items }}" as="t" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+                        <button type="button" onClick="{{ t.edit }}" style="flex:1;min-width:0;min-height:48px;display:flex;align-items:center;gap:12px;background:transparent;border:none;padding:0;text-align:left;cursor:pointer;color:var(--ink);font-family:inherit">
+                          <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="dumbbell" size="{{ 34 }}" fill="{{ t.fill }}" color="#211a12" hint-size="34px,34px"></x-import>
+                          <span style="display:flex;flex-direction:column;min-width:0">
+                            <span style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ t.name }}</span>
+                            <span style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ t.sub }}</span>
+                          </span>
+                        </button>
+                        <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ t.start }}" hint-size="auto,40px">Start</x-import>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ fo.empty }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);padding:4px 0 8px 26px">Leeg. Kies dit mapje bij het bewerken van een schema.</div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:48px" data-comment-anchor="82c50def57-div">
+            <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Recent</div>
+            <div style="margin-top:8px">
+              <sc-for list="{{ recent }}" as="r" hint-placeholder-count="3">
+                <div style="display:flex;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:var(--body-sm-size);line-height:var(--body-sm-line)">
+                  <span style="font-weight:800">{{ r.title }}</span>
+                  <span style="flex:1;min-width:0;font-weight:600;color:var(--ink-soft)">{{ r.sub }}</span>
+                  <span style="font-weight:700">{{ r.vol }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);margin-top:32px;padding-top:14px;display:flex;align-items:center;gap:10px">
+            <div style="flex:1;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);text-wrap:pretty">De laatste 4 weken als tekst voor je coach.</div>
+            <x-import component-from-global-scope="DesignSystem_de9512.Button" size="sm" onClick="{{ openCoachTraining }}" hint-size="auto,40px">Samenvatting kopiëren</x-import>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.workout }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="{{ wk.title }}" leading="collapse" onLeading="{{ minimize }}" action="{{ finishBtn }}" progress="{{ restProgress }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 16px">
+            <div style="border-top:1px solid var(--border);padding:12px 0 14px">
+              <x-import component-from-global-scope="DesignSystem_de9512.StatStrip" items="{{ wk.strip }}" hint-size="100%,40px"></x-import>
+              <sc-if value="{{ isOffline }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px"><x-import component-from-global-scope="DesignSystem_de9512.SyncStatus" mode="offline" hint-size="auto,24px"></x-import></div>
+              </sc-if>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px">{{ wk.pos }}</div>
+              <div onClick="{{ openExInfo }}" style="cursor:pointer"><x-import component-from-global-scope="DesignSystem_de9512.ExerciseHeader" name="{{ wk.ex.name }}" meta="{{ wk.ex.meta }}" target="{{ wk.ex.target }}" note="{{ wk.ex.note }}" onMenu="{{ openExMenu }}" hint-size="100%,72px"></x-import></div>
+              <sc-if value="{{ wk.ex.assist }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:8px">Het gewicht is de assist. Lager is beter.</div>
+              </sc-if>
+              <sc-if value="{{ wk.ex.typeNote }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:8px">{{ wk.ex.typeNote }}</div>
+              </sc-if>
+              <sc-if value="{{ wk.ex.std }}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <div style="display:grid;grid-template-columns:22px 1fr 58px 58px 44px;gap:10px;padding:14px 10px 2px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);letter-spacing:.06em">
+                    <span>#</span><span>Vorige</span><span style="text-align:center" data-comment-anchor="d5a856f5f2-span">{{ wk.ex.kgLabel }}</span><span style="text-align:center">Reps</span><span></span>
+                  </div>
+                  <sc-for list="{{ wk.ex.sets }}" as="s" hint-placeholder-count="3">
+                    <div style="margin-top:4px">
+                      <x-import component-from-global-scope="DesignSystem_de9512.SetRow" index="{{ s.index }}" previous="{{ s.previous }}" weight="{{ s.weight }}" reps="{{ s.reps }}" done="{{ s.done }}" onToggle="{{ s.toggle }}" onEditWeight="{{ s.edit }}" onEditReps="{{ s.edit }}" hint-size="100%,52px"></x-import>
+                      <sc-if value="{{ s.typed }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;align-items:center;gap:8px;padding:2px 10px 6px">
+                          <x-import component-from-global-scope="DesignSystem_de9512.SetTypeBadge" type="{{ s.type }}" hint-size="auto,20px"></x-import>
+                          <span style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ s.typeNote }}</span>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ wk.ex.alt }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <div style="display:flex;align-items:center;gap:10px;padding:14px 10px 2px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);letter-spacing:.06em">
+                    <span style="width:22px;flex:none">#</span><span style="flex:1;min-width:0">Vorige</span>
+                    <div style="width:126px;flex:none;display:flex;gap:10px">
+                      <sc-for list="{{ wk.ex.cols }}" as="c" hint-placeholder-count="1">
+                        <span style="flex:1;text-align:center">{{ c }}</span>
+                      </sc-for>
+                    </div>
+                    <span style="width:44px;flex:none"></span>
+                  </div>
+                  <sc-for list="{{ wk.ex.sets }}" as="s" hint-placeholder-count="3">
+                    <div>
+                      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-md);background:{{ s.bg }}">
+                        <div style="width:22px;flex:none;font-size:var(--body-sm-size);font-weight:700;color:var(--ink-soft)">{{ s.index }}</div>
+                        <div style="flex:1;min-width:0;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ s.previous }}</div>
+                        <div style="width:126px;flex:none;display:flex;gap:10px">
+                          <sc-if value="{{ s.plain }}" hint-placeholder-val="{{ true }}">
+                            <div style="flex:1;min-width:0;display:flex;gap:10px">
+                              <sc-for list="{{ s.cells }}" as="c" hint-placeholder-count="1">
+                                <div style="flex:1;min-width:0;display:flex">
+                                  <x-import component-from-global-scope="DesignSystem_de9512.ValueField" value="{{ c }}" active="{{ s.done }}" width="100%" onClick="{{ s.edit }}" hint-size="100%,44px"></x-import>
+                                </div>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ s.idle }}" hint-placeholder-val="{{ false }}">
+                            <div style="flex:1;min-width:0;display:flex;gap:8px">
+                              <div style="flex:1;min-width:0;display:flex">
+                                <x-import component-from-global-scope="DesignSystem_de9512.ValueField" value="{{ s.timeCell }}" width="100%" onClick="{{ s.edit }}" hint-size="100%,44px"></x-import>
+                              </div>
+                              <button type="button" onClick="{{ s.start }}" aria-label="Timer starten" style="width:44px;height:44px;flex:none;border:none;border-radius:var(--radius-md);background:var(--accent-orange);color:var(--accent-orange-ink);display:grid;place-items:center;cursor:pointer;padding:0">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 5.5v13l10.5-6.5z"></path></svg>
+                              </button>
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ s.running }}" hint-placeholder-val="{{ false }}">
+                            <div style="flex:1;min-width:0;display:flex;gap:8px">
+                              <div style="flex:1;min-width:0;min-height:44px;border-radius:var(--radius-sm);background:var(--accent-orange-soft);color:var(--accent-orange-fg);display:grid;place-items:center;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ liveRun }}</div>
+                              <button type="button" onClick="{{ s.stop }}" aria-label="Timer stoppen" style="width:44px;height:44px;flex:none;border:none;border-radius:var(--radius-md);background:var(--ink);color:var(--surface-primary);display:grid;place-items:center;cursor:pointer;padding:0">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"></rect></svg>
+                              </button>
+                            </div>
+                          </sc-if>
+                        </div>
+                        <button type="button" onClick="{{ s.toggle }}" aria-label="{{ s.checkLabel }}" style="width:44px;height:44px;flex:none;border:none;background:transparent;padding:0;display:grid;place-items:center;cursor:pointer">
+                          <span style="width:28px;height:28px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box;background:{{ s.checkBg }};border:1px solid {{ s.checkBorder }};color:{{ s.checkColor }}"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="check" size="{{ 15 }}" hint-size="15px,15px"></x-import></span>
+                        </button>
+                      </div>
+                      <sc-if value="{{ s.typed }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;align-items:center;gap:8px;padding:2px 10px 6px">
+                          <x-import component-from-global-scope="DesignSystem_de9512.SetTypeBadge" type="{{ s.type }}" hint-size="auto,20px"></x-import>
+                          <span style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ s.typeNote }}</span>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="padding:10px 10px 0">
+                <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ addSet }}" hint-size="auto,44px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="plus" size="{{ 14 }}" hint-size="14px,14px"></x-import>Set toevoegen</x-import>
+              </div>
+            </div>
+            <sc-if value="{{ wk.hasNext }}" hint-placeholder-val="{{ true }}">
+              <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px" data-comment-anchor="fdded1614e-div">
+                <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Oefeningen</div>
+                <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;mask-image:linear-gradient(to right,#000 92%,transparent);-webkit-mask-image:linear-gradient(to right,#000 92%,transparent)" data-comment-anchor="1ac168ee49-div">
+                  <sc-for list="{{ wk.next }}" as="n" hint-placeholder-count="3">
+                    <x-import component-from-global-scope="DesignSystem_de9512.NextUpPill" label="{{ n.label }}" fill="{{ n.fill }}" color="{{ n.color }}" onClick="{{ n.go }}" hint-size="auto,44px"></x-import>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:12px;display:flex;justify-content:center">
+              <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ askAbort }}" hint-size="auto,44px">Workout afbreken</x-import>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.summary }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="Samenvatting" leading="none" action="{{ saveBtn }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800">{{ sum.title }}</div>
+              <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:700;color:var(--ink-soft);margin-top:4px">Woensdag 23 september · {{ sum.dur }}</div>
+              <div style="margin-top:14px"><x-import component-from-global-scope="DesignSystem_de9512.StatStrip" items="{{ sum.strip }}" hint-size="100%,40px"></x-import></div>
+            </div>
+            <sc-if value="{{ sum.hasPrs }}" hint-placeholder-val="{{ false }}">
+              <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Nieuwe records</div>
+                <div style="margin-top:6px">
+                  <sc-for list="{{ sum.prs }}" as="p" hint-placeholder-count="1">
+                    <x-import component-from-global-scope="DesignSystem_de9512.ListRow" first="{{ p.first }}" icon="trend" badgeFill="var(--accent-mint)" name="{{ p.name }}" value="{{ p.val }}" hint-size="100%,56px"></x-import>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Oefeningen</div>
+              <div style="margin-top:6px">
+                <sc-for list="{{ sum.rows }}" as="r" hint-placeholder-count="4">
+                  <x-import component-from-global-scope="DesignSystem_de9512.ListRow" first="{{ r.first }}" icon="dumbbell" name="{{ r.name }}" sub="{{ r.sub }}" value="{{ r.val }}" hint-size="100%,56px"></x-import>
+                </sc-for>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Hoe zwaar was het?</div>
+              <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-bottom:10px">Sessie-RPE, optioneel</div>
+              <x-import component-from-global-scope="DesignSystem_de9512.RpeInput" value="{{ sessionRpe }}" onChange="{{ setSessionRpe }}" hint-size="100%,44px"></x-import>
+              <textarea placeholder="Notitie bij deze training" value="{{ sessionNote }}" onChange="{{ onSessionNote }}" style="margin-top:12px;width:100%;box-sizing:border-box;min-height:72px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:600;padding:12px;resize:none;outline:none"></textarea>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="clock" size="{{ 30 }}" fill="var(--accent-lavender)" color="#211a12" hint-size="30px,30px"></x-import>
+                <div style="flex:1;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Galaxy Watch</div>
+                <span style="font-size:var(--chip-size);line-height:var(--chip-line);font-weight:700;border:1px dashed var(--ink-soft);color:var(--ink-soft);border-radius:var(--radius-pill);padding:3px 10px">Fase 2</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;border:1px dashed var(--border);border-radius:var(--radius-md);padding:12px">
+                <div><div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Gem. hartslag</div><div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800;color:var(--ink-soft)">— bpm</div></div>
+                <div><div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Max</div><div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800;color:var(--ink-soft)">— bpm</div></div>
+                <div><div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Kcal</div><div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800;color:var(--ink-soft)">—</div></div>
+              </div>
+              <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:8px;text-wrap:pretty">Wordt op tijd gekoppeld aan je watch-sessie via Health Connect. Kan later binnenkomen.</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.progress }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;overflow-y:auto;padding:18px 16px 24px">
+          <div style="display:flex;align-items:center;gap:11px;padding-bottom:8px" data-comment-anchor="8470741b9a-div">
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--accent-lavender);color:#211a12;display:grid;place-items:center;font-size:var(--body-md-size);font-weight:800">V</div>
+            <div>
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Voortgang</div>
+              <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:700;color:var(--ink-soft)">Sinds 17 jun 2025</div>
+            </div>
+          </div>
+          <div style="margin-top:24px"><x-import component-from-global-scope="DesignSystem_de9512.RangeSelector" value="{{ rng }}" onChange="{{ setRng }}" hint-size="100%,40px"></x-import></div>
+          <div style="display:flex;gap:8px;margin-top:16px" data-comment-anchor="6b6442166b-div">
+            <div style="flex:1"><x-import component-from-global-scope="DesignSystem_de9512.StatChip" label="PR's" value="{{ pg.prs }}" fill="var(--accent-pink)" color="var(--accent-pink-ink)" hint-size="100%,64px"></x-import></div>
+            <div style="flex:1"><x-import component-from-global-scope="DesignSystem_de9512.StatChip" label="Sessies" value="{{ pg.sessions }}" fill="var(--accent-mint)" color="var(--accent-mint-ink)" hint-size="100%,64px"></x-import></div>
+            <div style="flex:1.4"><x-import component-from-global-scope="DesignSystem_de9512.StatChip" label="Volume" value="{{ pg.volume }}" fill="var(--accent-blue-light)" color="var(--accent-blue)" hint-size="100%,64px"></x-import></div>
+          </div>
+          <div style="margin-top:22px">
+            <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Kracht per oefening</div>
+            <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Oefeningen die je in deze periode minstens 2× deed</div>
+          </div>
+          <sc-for list="{{ pg.charts }}" as="c" hint-placeholder-count="3">
+            <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">
+              <button type="button" onClick="{{ c.open }}" style="width:100%;display:flex;align-items:center;gap:10px;border:none;background:transparent;padding:0;min-height:44px;text-align:left;cursor:pointer;color:var(--ink);font-family:inherit">
+                <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="dumbbell" size="{{ 30 }}" fill="var(--accent-orange)" color="var(--accent-orange-ink)" hint-size="30px,30px"></x-import>
+                <div style="flex:1;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ c.name }}</div>
+                <div style="font-size:var(--delta-size);line-height:var(--delta-line);font-weight:700;color:{{ c.deltaColor }}">{{ c.delta }}</div>
+              </button>
+              <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800;margin-top:8px">{{ c.value }}</div>
+              <x-import component-from-global-scope="DesignSystem_de9512.LineChart" values="{{ c.values }}" labels="{{ c.labels }}" prIndex="{{ c.prIndex }}" height="{{ 116 }}" formatValue="{{ c.fmt }}" hint-size="100%,140px"></x-import>
+              <div style="margin-top:18px"><x-import component-from-global-scope="DesignSystem_de9512.MetricSelector" options="{{ c.metricOptions }}" value="{{ c.metric }}" onChange="{{ c.setMetric }}" hint-size="100%,40px"></x-import></div>
+            </div>
+          </sc-for>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="bars" size="{{ 30 }}" fill="var(--accent-blue-light)" color="var(--accent-blue)" hint-size="30px,30px"></x-import>
+              <div><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Volume</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ pg.volSub }}</div></div>
+            </div>
+            <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800;margin-top:10px">{{ pg.volLast }}</div>
+            <x-import component-from-global-scope="DesignSystem_de9512.LineChart" values="{{ pg.volValues }}" labels="{{ pg.volLabels }}" color="var(--accent-blue)" height="{{ 110 }}" formatValue="{{ fmtKg }}" hint-size="100%,130px"></x-import>
+          </div>
+          
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:14px;display:flex;align-items:center;gap:10px">
+            <div style="flex:1;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Je maandoverzicht van september staat klaar.</div>
+            <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ openRecap }}" hint-size="auto,40px">Bekijken</x-import>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.recap }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;overflow-y:auto;padding:16px 16px 28px">
+          <div style="display:flex;justify-content:flex-end">
+            <button type="button" onClick="{{ closeRecap }}" aria-label="Sluiten" style="width:44px;height:44px;border:none;background:transparent;padding:0;display:grid;place-items:center;cursor:pointer;margin-right:-5px">
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--surface-tint);color:var(--ink-soft);display:grid;place-items:center"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="close" size="{{ 16 }}" hint-size="16px,16px"></x-import></span>
+            </button>
+          </div>
+          <div style="margin-top:6px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-orange-fg)">Maandoverzicht</div>
+          <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800;margin-top:4px">Dit zijn je resultaten van september</div>
+          <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:700;color:var(--ink-soft);margin-top:8px">1 t/m 30 september 2026</div>
+          <div style="display:flex;justify-content:space-between;margin-top:18px">
+            <sc-for list="{{ recapStats }}" as="s" hint-placeholder-count="3">
+              <div>
+                <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">{{ s.label }}</div>
+                <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800;color:{{ s.color }}">{{ s.value }}</div>
+                <x-import component-from-global-scope="DesignSystem_de9512.StatDelta" direction="{{ s.dir }}" hint-size="auto,15px">{{ s.delta }}</x-import>
+              </div>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="calendar" size="{{ 30 }}" fill="var(--accent-blue-light)" color="var(--accent-blue)" hint-size="30px,30px"></x-import>
+              <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Welke dagen trainde je</div>
+            </div>
+            <div style="margin-top:14px"><x-import component-from-global-scope="DesignSystem_de9512.CalendarGrid" days="{{ 30 }}" startWeekday="{{ 2 }}" trained="{{ recapTrained }}" note="Meestal ma / do / za — precies je schema" hint-size="100%,240px"></x-import></div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="radar" size="{{ 30 }}" fill="var(--accent-pink)" color="var(--accent-pink-ink)" hint-size="30px,30px"></x-import>
+              <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Verdeling per spiergroep</div>
+            </div>
+            <div style="margin-top:10px"><x-import component-from-global-scope="DesignSystem_de9512.RadarChart" size="{{ 250 }}" axes="{{ radar.axes }}" series="{{ radar.series }}" compare="{{ radar.compare }}" legend="{{ radar.legend }}" hint-size="100%,290px"></x-import></div>
+            <div style="margin-top:14px">
+              <sc-for list="{{ radar.bars }}" as="m" hint-placeholder-count="5">
+                <x-import component-from-global-scope="DesignSystem_de9512.MuscleBar" label="{{ m.label }}" count="{{ m.count }}" max="{{ 24 }}" hint-size="100%,32px"></x-import>
+              </sc-for>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="trend" size="{{ 30 }}" fill="var(--accent-orange)" color="var(--accent-orange-ink)" hint-size="30px,30px"></x-import>
+              <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Personal records</div>
+            </div>
+            <div style="margin-top:8px">
+              <x-import component-from-global-scope="DesignSystem_de9512.ListRow" first="{{ true }}" name="Leg Press (Machine)" tags="{{ tagGewicht }}" value="140 kg" hint-size="100%,56px"></x-import>
+              <x-import component-from-global-scope="DesignSystem_de9512.ListRow" name="Pull Up (Assisted)" tags="{{ tagAssist }}" value="18 kg" hint-size="100%,56px"></x-import>
+              <x-import component-from-global-scope="DesignSystem_de9512.ListRow" name="Chest Press (Machine)" tags="{{ tagGewicht }}" value="34 kg" hint-size="100%,56px"></x-import>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="repeat" size="{{ 30 }}" fill="var(--accent-mint)" color="var(--accent-mint-ink)" hint-size="30px,30px"></x-import>
+              <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Top oefeningen</div>
+            </div>
+            <div style="margin-top:8px">
+              <x-import component-from-global-scope="DesignSystem_de9512.ListRow" first="{{ true }}" name="Leg Press (Machine)" badgeFill="var(--accent-mint)" sub="Bovenbenen" value="5×" hint-size="100%,56px"></x-import>
+              <x-import component-from-global-scope="DesignSystem_de9512.ListRow" name="Chest Press (Machine)" badgeFill="var(--accent-mint)" sub="Borst" value="5×" hint-size="100%,56px"></x-import>
+              <x-import component-from-global-scope="DesignSystem_de9512.ListRow" name="Lat Pulldown (Cable)" badgeFill="var(--accent-mint)" sub="Rug" value="4×" hint-size="100%,56px"></x-import>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.measure }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;overflow-y:auto;padding:18px 16px 24px">
+          <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Metingen</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:12px;border-top:1px solid var(--border);padding-top:14px">
+            <div style="flex:1;min-width:0"><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ measureTitle }}</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ measureSub }}</div></div>
+            <sc-if value="{{ measureDue }}" hint-placeholder-val="{{ true }}">
+              <x-import component-from-global-scope="DesignSystem_de9512.Button" size="sm" onClick="{{ openMeasureEntry }}" hint-size="auto,40px">Invullen</x-import>
+            </sc-if>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="scale" size="{{ 30 }}" fill="var(--accent-pink)" color="var(--accent-pink-ink)" hint-size="30px,30px"></x-import>
+              <div><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Gewicht</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Lijn is het 7-daags gemiddelde</div></div>
+            </div>
+            <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800;margin-top:12px">{{ weightNow }}<span style="font-size:var(--body-md-size);font-weight:700"> kg</span></div>
+            <div style="font-size:var(--delta-size);line-height:var(--delta-line);font-weight:700;color:var(--ink-soft)">{{ weightDelta }}</div>
+            <div style="margin-top:6px"><x-import component-from-global-scope="DesignSystem_de9512.WeightTrendChart" values="{{ daily }}" labels="{{ dailyLabels }}" window="{{ 7 }}" hint-size="100%,130px"></x-import></div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="bars" size="{{ 30 }}" fill="var(--accent-lavender)" color="#211a12" hint-size="30px,30px"></x-import>
+              <div><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Omtrekken</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Laatste meting {{ lastMeasure }} · verschil t.o.v. start</div></div>
+            </div>
+            <div style="margin-top:8px">
+              <sc-for list="{{ fieldRows }}" as="f" hint-placeholder-count="10">
+                <x-import component-from-global-scope="DesignSystem_de9512.MeasurementRow" first="{{ f.first }}" label="{{ f.label }}" value="{{ f.value }}" sinceStart="{{ f.sinceStart }}" direction="{{ f.direction }}" onClick="{{ f.open }}" hint-size="100%,52px"></x-import>
+              </sc-for>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:14px" data-comment-anchor="bc50cfa426-div">
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="clock" size="{{ 30 }}" fill="var(--accent-lavender)" color="#211a12" hint-size="30px,30px"></x-import>
+              <div style="flex:1"><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Slaap en stappen</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Van je Galaxy Watch 7</div></div>
+              <span style="font-size:var(--chip-size);line-height:var(--chip-line);font-weight:700;border:1px dashed var(--ink-soft);color:var(--ink-soft);border-radius:var(--radius-pill);padding:3px 10px">Fase 2</span>
+            </div>
+            <div style="margin-top:12px;height:84px;border:1px dashed var(--border);border-radius:var(--radius-md);display:grid;place-items:center;font-size:var(--body-sm-size);font-weight:600;color:var(--ink-soft)">Hier komen slaap en stappen per week</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.measureDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="{{ mdet.label }}" leading="close" onLeading="{{ goMeasure }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+            <div style="border-top:1px solid var(--border);padding-top:16px">
+              <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Laatste meting · {{ lastMeasure }}</div>
+              <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800;margin-top:4px">{{ mdet.value }}</div>
+              <div style="font-size:var(--delta-size);line-height:var(--delta-line);font-weight:700;color:var(--ink-soft)">{{ mdet.delta }}</div>
+            </div>
+            <sc-if value="{{ mdet.hasChart }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:16px">
+                <x-import component-from-global-scope="DesignSystem_de9512.LineChart" values="{{ mdet.values }}" labels="{{ mdet.labels }}" color="var(--accent-pink)" height="{{ 140 }}" formatValue="{{ fmtCm }}" hint-size="100%,160px"></x-import>
+              </div>
+            </sc-if>
+            <sc-if value="{{ mdet.noChart }}" hint-placeholder-val="{{ false }}">
+              <x-import component-from-global-scope="DesignSystem_de9512.EmptyState" icon="trend" title="Nog geen verloop" body="Na twee metingen zie je hier een grafiek." hint-size="100%,140px"></x-import>
+            </sc-if>
+            <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:6px">
+              <sc-for list="{{ mdet.history }}" as="h" hint-placeholder-count="6">
+                <div style="display:flex;align-items:baseline;gap:10px;padding:8px 0;font-size:var(--body-sm-size);line-height:var(--body-sm-line)">
+                  <span style="flex:1;font-weight:600;color:var(--ink-soft)">{{ h.date }}</span>
+                  <span style="font-weight:800">{{ h.val }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px">
+              <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ openMeasureEntry }}" hint-size="auto,44px">Meting invullen of aanpassen</x-import>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.measureEntry }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="Meting" leading="close" onLeading="{{ goMeasure }}" action="{{ saveMeasureBtn }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+            <div style="border-top:1px solid var(--border);padding-top:14px;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:700;color:var(--ink-soft)">Woensdag 23 september 2026 · vorige waarde grijs ernaast</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-bottom:12px">
+              <div style="flex:1">
+                <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Gewicht</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">vorige {{ weightNow }} kg</div>
+              </div>
+              <input inputmode="decimal" placeholder="kg" value="{{ entryWeight }}" onChange="{{ onEntryWeight }}" style="width:88px;height:48px;box-sizing:border-box;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--title-size);font-weight:800;text-align:center;outline:none">
+            </div>
+            <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);border-top:1px solid var(--border);padding-top:14px">Omtrekken in cm</div>
+            <sc-for list="{{ entryRows }}" as="f" hint-placeholder-count="10">
+              <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+                <div style="flex:1;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:700">{{ f.label }}</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ f.prev }}</div>
+                <input inputmode="decimal" placeholder="–" value="{{ f.input }}" onChange="{{ f.onInput }}" style="width:76px;height:44px;box-sizing:border-box;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:800;text-align:center;outline:none">
+              </div>
+            </sc-for>
+            <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:12px;text-wrap:pretty">Lege velden sla je over. Velden aanpassen kan in Instellingen.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.food }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;overflow-y:auto;padding:18px 16px 24px" data-comment-anchor="a758459c4e-div">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Eten</div>
+          </div>
+          <div style="margin-top:2px"><x-import component-from-global-scope="DesignSystem_de9512.SyncStatus" mode="{{ syncMode }}" hint-size="auto,24px"></x-import></div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:20px">
+            <button type="button" onClick="{{ dayPrev }}" aria-label="Vorige dag" style="width:44px;height:44px;border:none;background:transparent;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--ink-soft);margin-left:-12px"><span style="display:grid;transform:rotate(90deg)"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="chevron-down" size="{{ 20 }}" hint-size="20px,20px"></x-import></span></button>
+            <div style="flex:1;text-align:center" data-comment-anchor="abeeaa2e23-div"><span style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:800">{{ day.rel }}</span><span style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)"> · {{ day.date }}</span></div>
+            <button type="button" onClick="{{ dayNext }}" aria-label="Volgende dag" style="width:44px;height:44px;border:none;background:transparent;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--ink-soft);margin-right:-12px"><span style="display:grid;transform:rotate(-90deg)"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="chevron-down" size="{{ 20 }}" hint-size="20px,20px"></x-import></span></button>
+          </div>
+          <div style="margin-top:8px;background:var(--accent-mint);border-radius:var(--radius-lg);padding:18px 16px;color:var(--accent-mint-ink)">
+            <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase">Nog over</div>
+            <div style="font-size:var(--display-lg-size);line-height:var(--display-lg-line);font-weight:800;margin-top:6px">{{ left.kcal }}<span style="font-size:var(--title-size);font-weight:800"> kcal</span></div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px">
+              <div><div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase">Eiwit</div><div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">{{ left.protein }} g</div></div>
+              <div><div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase">Vet</div><div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">{{ left.fat }} g</div></div>
+              <div><div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase">Koolhydraten</div><div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">{{ left.carbs }} g</div></div>
+            </div>
+          </div>
+          <div style="margin-top:24px">
+            <sc-for list="{{ mealRows }}" as="m" hint-placeholder-count="5">
+              <x-import component-from-global-scope="DesignSystem_de9512.MealBlock" meal="{{ m.meal }}" accent="{{ m.accent }}" note="{{ m.note }}" recipe="{{ m.recipe }}" kcal="{{ m.kcal }}" protein="{{ m.protein }}" fat="{{ m.fat }}" carbs="{{ m.carbs }}" onEdit="{{ m.edit }}" hint-size="100%,120px"></x-import>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;align-items:center;gap:10px">
+            <div style="flex:1;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);text-wrap:pretty">Zet je notities als tekst klaar voor je coach.</div>
+            <x-import component-from-global-scope="DesignSystem_de9512.Button" size="sm" onClick="{{ openCoachFood }}" hint-size="auto,40px">Kopieer voor coach</x-import>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ goalLine }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.tplEdit }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="Schema" leading="close" onLeading="{{ goHome }}" action="{{ saveTplBtn }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">Naam</div>
+              <input value="{{ et.name }}" onChange="{{ onTplName }}" style="width:100%;box-sizing:border-box;height:48px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--title-size);font-weight:800;padding:0 12px;outline:none">
+              <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:16px 0 8px">Dagen</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ et.days }}" as="d" hint-placeholder-count="7">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ d.on }}" onClick="{{ d.toggle }}" hint-size="auto,40px">{{ d.label }}</x-import>
+                </sc-for>
+              </div>
+              <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:16px 0 8px">Mapje</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ et.folders }}" as="fo" hint-placeholder-count="2">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ fo.on }}" onClick="{{ fo.pick }}" hint-size="auto,40px">{{ fo.label }}</x-import>
+                </sc-for>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Oefeningen</div>
+              <sc-if value="{{ et.empty }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="DesignSystem_de9512.EmptyState" icon="dumbbell" title="Nog geen oefeningen" body="Voeg oefeningen toe uit de bibliotheek of maak een eigen oefening." hint-size="100%,140px"></x-import>
+              </sc-if>
+              <sc-for list="{{ et.items }}" as="it" hint-placeholder-count="5">
+                <div style="border-top:1px solid var(--border);padding:14px 0 6px;margin-top:10px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="dumbbell" size="{{ 34 }}" hint-size="34px,34px"></x-import>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ it.name }}</div>
+                      <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ it.sub }}</div>
+                    </div>
+                    <button type="button" onClick="{{ it.remove }}" aria-label="Oefening verwijderen" style="width:44px;height:44px;border:none;background:transparent;color:var(--ink-soft);display:grid;place-items:center;cursor:pointer;margin-right:-10px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="close" size="{{ 16 }}" hint-size="16px,16px"></x-import></button>
+                  </div>
+                  <sc-if value="{{ it.isTime }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:12px">
+                      <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">Timer</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px">
+                        <sc-for list="{{ it.timerChips }}" as="o" hint-placeholder-count="2">
+                          <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ o.on }}" onClick="{{ o.pick }}" hint-size="auto,40px">{{ o.label }}</x-import>
+                        </sc-for>
+                      </div>
+                      <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:6px;text-wrap:pretty">{{ it.timerNote }}</div>
+                    </div>
+                  </sc-if>
+                  <div style="display:flex;gap:10px;padding:12px 0 4px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">
+                    <span style="width:22px;flex:none">#</span>
+                    <sc-for list="{{ it.cols }}" as="c" hint-placeholder-count="2">
+                      <span style="flex:1;min-width:0;text-align:center">{{ c }}</span>
+                    </sc-for>
+                    <span style="width:44px;flex:none"></span>
+                  </div>
+                  <sc-for list="{{ it.sets }}" as="st" hint-placeholder-count="3">
+                    <div style="display:flex;gap:10px;align-items:center;padding:4px 0">
+                      <span style="width:22px;flex:none;font-size:var(--body-sm-size);font-weight:800;color:var(--ink-soft)">{{ st.index }}</span>
+                      <sc-for list="{{ st.cells }}" as="c" hint-placeholder-count="2">
+                        <input inputmode="{{ c.mode }}" placeholder="{{ c.ph }}" value="{{ c.value }}" onChange="{{ c.onInput }}" style="flex:1;min-width:0;width:100%;height:44px;box-sizing:border-box;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:800;text-align:center;outline:none">
+                      </sc-for>
+                      <button type="button" onClick="{{ st.remove }}" aria-label="Set verwijderen" style="width:44px;height:44px;flex:none;border:none;background:transparent;color:var(--ink-soft);display:grid;place-items:center;cursor:pointer"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="close" size="{{ 14 }}" hint-size="14px,14px"></x-import></button>
+                    </div>
+                  </sc-for>
+                  <div style="padding-top:6px">
+                    <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ it.addSet }}" hint-size="auto,44px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="plus" size="{{ 14 }}" hint-size="14px,14px"></x-import>Set toevoegen</x-import>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:10px">
+                <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ pickForTpl }}" hint-size="auto,44px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="plus" size="{{ 14 }}" hint-size="14px,14px"></x-import>Oefening toevoegen</x-import>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.exDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="{{ ed.name }}" leading="close" onLeading="{{ ed.back }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+            <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ ed.sub }}</div>
+            <div style="margin-top:16px">{{ ed.fig }}</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:16px;font-size:var(--body-sm-size);line-height:var(--body-sm-line)">
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="flex:none;width:12px;height:12px;border-radius:4px;background:var(--accent-lavender);align-self:center"></span>
+                <span style="font-weight:700;color:var(--ink-soft);width:72px;flex:none">Primair</span>
+                <span style="font-weight:700">{{ ed.prim }}</span>
+              </div>
+              <sc-if value="{{ ed.hasSec }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:baseline;gap:8px">
+                  <span style="flex:none;width:12px;height:12px;border-radius:4px;background:color-mix(in oklab, var(--accent-lavender) 42%, var(--surface-primary));align-self:center"></span>
+                  <span style="font-weight:700;color:var(--ink-soft);width:72px;flex:none">Secundair</span>
+                  <span style="font-weight:700">{{ ed.sec }}</span>
+                </div>
+              </sc-if>
+            </div>
+            <sc-if value="{{ ed.hasHist }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:14px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Records</div>
+                <div style="margin-top:6px">
+                  <sc-for list="{{ ed.records }}" as="p" hint-placeholder-count="2">
+                    <x-import component-from-global-scope="DesignSystem_de9512.ListRow" first="{{ p.first }}" icon="trend" badgeFill="var(--accent-orange-soft)" name="{{ p.name }}" sub="{{ p.sub }}" value="{{ p.val }}" hint-size="100%,56px"></x-import>
+                  </sc-for>
+                </div>
+                <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">{{ ed.chartTitle }}</div>
+                <sc-if value="{{ ed.note }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:4px">{{ ed.note }}</div>
+                </sc-if>
+                <div style="margin-top:12px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.LineChart" values="{{ ed.chartVals }}" labels="{{ ed.chartLabels }}" color="var(--accent-orange)" height="{{ 140 }}" formatValue="{{ ed.fmtV }}" hint-size="100%,160px"></x-import>
+                </div>
+                <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:14px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Geschiedenis</div>
+                <div style="margin-top:4px">
+                  <sc-for list="{{ ed.hist }}" as="h" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:baseline;gap:12px;padding:10px 0;border-top:1px solid var(--border);font-size:var(--body-sm-size);line-height:var(--body-sm-line)">
+                      <span style="flex:none;width:52px;font-weight:600;color:var(--ink-soft)">{{ h.date }}</span>
+                      <span style="flex:1;min-width:0;font-weight:700;text-wrap:pretty">{{ h.sets }}</span>
+                      <sc-if value="{{ h.pr }}" hint-placeholder-val="{{ false }}">
+                        <span style="flex:none;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:800;letter-spacing:.07em;color:var(--accent-orange-fg);background:var(--accent-orange-soft);border-radius:6px;padding:1px 6px">PR</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ ed.noHist }}" hint-placeholder-val="{{ false }}">
+              <div style="border-top:1px solid var(--border);margin-top:24px">
+                <x-import component-from-global-scope="DesignSystem_de9512.EmptyState" icon="trend" title="Nog geen geschiedenis" body="Na je eerste sessie zie je hier je sets en records." hint-size="100%,140px"></x-import>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.library }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="{{ libTitle }}" leading="close" onLeading="{{ closeLibrary }}" hint-size="100%,72px"></x-import>
+          <div style="padding:0 16px">
+            <div style="display:flex;align-items:center;gap:8px;height:44px;border-radius:var(--radius-md);background:var(--surface-tint);padding:0 12px;color:var(--ink-soft)">
+              <x-import component-from-global-scope="DesignSystem_de9512.Icon" name="search" size="{{ 17 }}" hint-size="17px,17px"></x-import>
+              <input placeholder="Zoek oefening" value="{{ search }}" onChange="{{ onSearch }}" style="flex:1;min-width:0;height:100%;border:none;background:transparent;color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:700;outline:none">
+            </div>
+            <div style="display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;mask-image:linear-gradient(to right,#000 92%,transparent);-webkit-mask-image:linear-gradient(to right,#000 92%,transparent)">
+              <sc-for list="{{ groupChips }}" as="g" hint-placeholder-count="7">
+                <div style="flex:none"><x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ g.on }}" onClick="{{ g.pick }}" hint-size="auto,40px">{{ g.label }}</x-import></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:4px 16px 24px">
+            <sc-for list="{{ libRows }}" as="e" hint-placeholder-count="8">
+              <button type="button" onClick="{{ e.choose }}" style="width:100%;display:flex;align-items:center;gap:12px;border:none;border-top:1px solid var(--border);background:transparent;padding:10px 0;text-align:left;cursor:pointer;color:var(--ink);font-family:inherit;min-height:56px">
+                <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="dumbbell" size="{{ 34 }}" hint-size="34px,34px"></x-import>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+                  <span style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ e.name }}</span>
+                  <span style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ e.sub }}</span>
+                </span>
+                <sc-if value="{{ e.pickable }}" hint-placeholder-val="{{ false }}">
+                  <span style="color:var(--ink-soft);display:grid;place-items:center;width:28px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="plus" size="{{ 16 }}" hint-size="16px,16px"></x-import></span>
+                </sc-if>
+              </button>
+            </sc-for>
+            <sc-if value="{{ libEmpty }}" hint-placeholder-val="{{ false }}">
+              <x-import component-from-global-scope="DesignSystem_de9512.EmptyState" icon="search" title="Niets gevonden" body="Maak hem aan als eigen oefening." hint-size="100%,140px"></x-import>
+            </sc-if>
+            <div style="border-top:1px solid var(--border);padding-top:12px">
+              <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ openCustom }}" hint-size="auto,44px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="plus" size="{{ 14 }}" hint-size="14px,14px"></x-import>Eigen oefening</x-import>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.settings }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="Instellingen" leading="close" onLeading="{{ goHome }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Dagdoelen eten</div>
+              <sc-for list="{{ goalRows }}" as="g" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+                  <div style="flex:1;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:700">{{ g.label }}</div>
+                  <input inputmode="numeric" value="{{ g.value }}" onChange="{{ g.onInput }}" style="width:76px;height:44px;box-sizing:border-box;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:800;text-align:center;outline:none">
+                  <div style="width:28px;font-size:var(--body-sm-size);font-weight:700;color:var(--ink-soft)">{{ g.unit }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Meetschema</div>
+              <div style="display:flex;gap:6px;margin-top:10px">
+                <sc-for list="{{ scheduleChips }}" as="c" hint-placeholder-count="3">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ c.on }}" onClick="{{ c.pick }}" hint-size="auto,40px">{{ c.label }}</x-import>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+                <div style="flex:1;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Herinnering als je een meetmoment mist</div>
+                <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ reminder }}" onClick="{{ toggleReminder }}" hint-size="auto,40px">{{ reminderLabel }}</x-import>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Thema</div>
+              <div style="display:flex;gap:6px;margin-top:10px">
+                <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ isLight }}" onClick="{{ setLight }}" hint-size="auto,40px">Licht</x-import>
+                <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ isDark }}" onClick="{{ setDark }}" hint-size="auto,40px">Donker</x-import>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Je data</div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+                <div style="flex:1"><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Hevy-historie</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">CSV uit Hevy importeren</div></div>
+                <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ openImport }}" hint-size="auto,40px">Importeren</x-import>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
+                <div style="flex:1"><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Google Sheet</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Metingen uit "Gym dashboard"</div></div>
+                <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ importSheet }}" hint-size="auto,40px">Importeren</x-import>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
+                <div style="flex:1"><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Exporteren</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Alles, sinds de start</div></div>
+                <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ exportCsv }}" hint-size="auto,40px">CSV</x-import>
+                <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ exportJson }}" hint-size="auto,40px">JSON</x-import>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="flex:1;font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Koppelingen</div>
+                <span style="font-size:var(--chip-size);line-height:var(--chip-line);font-weight:700;border:1px dashed var(--ink-soft);color:var(--ink-soft);border-radius:var(--radius-pill);padding:3px 10px">Fase 2</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+                <div style="flex:1"><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Health Connect</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Galaxy Watch 7: slaap, stappen, rusthartslag, trainingen. Alleen lezen.</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
+                <div style="flex:1"><div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">MyFitt-weegschaal</div><div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Nog uitzoeken of hij naar Health Connect schrijft</div></div>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+              <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Account</div>
+              <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin:4px 0 8px">Eén inlog, voor telefoon en desktop. Data staat in de EU.</div>
+              <x-import component-from-global-scope="DesignSystem_de9512.SyncStatus" mode="{{ syncMode }}" hint-size="auto,24px"></x-import>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ is.import }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <x-import component-from-global-scope="DesignSystem_de9512.TopBar" title="Hevy-import" leading="close" onLeading="{{ openSettings }}" hint-size="100%,72px"></x-import>
+          <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">{{ imp.stepLabel }}</div>
+              <div style="display:flex;gap:4px;margin-top:8px">
+                <sc-for list="{{ imp.dots }}" as="d" hint-placeholder-count="4">
+                  <div style="flex:1;height:4px;border-radius:2px;background:{{ d.bg }}"></div>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ imp.s1 }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:16px">
+                <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800">workouts.csv</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:700;color:var(--ink-soft);margin-top:4px">17 jun 2025 t/m 2 sep 2026</div>
+                <div style="margin-top:14px"><x-import component-from-global-scope="DesignSystem_de9512.StatStrip" items="{{ impStrip }}" hint-size="100%,40px"></x-import></div>
+                <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:12px">
+                  <sc-for list="{{ impChecks }}" as="c" hint-placeholder-count="5">
+                    <div style="display:flex;gap:10px;padding:6px 0">
+                      <span style="color:var(--ink-soft);padding-top:2px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="check" size="{{ 14 }}" hint-size="14px,14px"></x-import></span>
+                      <div style="flex:1;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;text-wrap:pretty">{{ c }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ imp.s2 }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px">
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Oefeningsnamen</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);text-wrap:pretty">73 namen gevonden. Dit zijn de voorstellen om samen te voegen; de rest wordt als losse oefening gemaakt.</div>
+                <div style="margin-top:10px">
+                  <sc-for list="{{ imp.merges }}" as="m" hint-placeholder-count="7">
+                    <div style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding:10px 0">
+                      <div style="flex:1;min-width:0">
+                        <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ m.from }}</div>
+                        <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ m.sub }}</div>
+                      </div>
+                      <div style="flex:none"><x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ m.on }}" onClick="{{ m.toggle }}" hint-size="auto,40px">{{ m.label }}</x-import></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ imp.s3 }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px">
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Workout-titels</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);text-wrap:pretty">33 titels. Schema's worden niet automatisch herkend; koppel ze als je wilt. Tik om te wisselen.</div>
+                <div style="margin-top:10px">
+                  <sc-for list="{{ imp.titles }}" as="t" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding:10px 0">
+                      <div style="flex:1;min-width:0">
+                        <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">{{ t.t }}</div>
+                        <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ t.sub }}</div>
+                      </div>
+                      <div style="flex:none"><x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ t.on }}" onClick="{{ t.cycle }}" hint-size="auto,40px">{{ t.link }}</x-import></div>
+                    </div>
+                  </sc-for>
+                  <div style="border-top:1px solid var(--border);padding-top:10px;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">27 andere titels blijven los</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ imp.s4 }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px">
+                <div style="font-size:var(--display-md-size);line-height:var(--display-md-line);font-weight:800">Geïmporteerd</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft);margin-top:4px;text-wrap:pretty">127 workouts en 2.348 sets. Rijen met duur 0 s bij een gewone oefening zijn overgeslagen. Bij een volgende import worden dubbele workouts genegeerd.</div>
+                <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:12px;font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Controle</div>
+                <div style="margin-top:4px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.ListRow" first="{{ true }}" icon="check" badgeFill="var(--accent-mint)" name="Leg Press (Machine)" sub="jul 2025 → sep 2026" value="60 → 140 kg" hint-size="100%,56px"></x-import>
+                  <x-import component-from-global-scope="DesignSystem_de9512.ListRow" icon="check" badgeFill="var(--accent-mint)" name="Pull Up (Assisted)" sub="Assist, lager is beter" value="36 → 18 kg" hint-size="100%,56px"></x-import>
+                  <x-import component-from-global-scope="DesignSystem_de9512.ListRow" icon="check" badgeFill="var(--accent-mint)" name="Chest Press (Machine)" sub="jul 2025 → sep 2026" value="25 → 34 kg" hint-size="100%,56px"></x-import>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--border)">
+            <sc-if value="{{ imp.canBack }}" hint-placeholder-val="{{ false }}">
+              <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ impBack }}" hint-size="auto,44px">Terug</x-import>
+            </sc-if>
+            <div style="flex:1"></div>
+            <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ impNext }}" hint-size="auto,44px">{{ imp.nextLabel }}</x-import>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ push }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ openPush }}" style="position:absolute;top:10px;left:10px;right:10px;z-index:30;display:flex;align-items:center;gap:12px;text-align:left;border:none;border-radius:var(--radius-lg);background:var(--surface-tint);box-shadow:var(--shadow-popover);padding:12px;cursor:pointer;color:var(--ink);font-family:inherit">
+          <x-import component-from-global-scope="DesignSystem_de9512.IconBadge" icon="calendar" size="{{ 34 }}" fill="var(--accent-orange)" color="var(--accent-orange-ink)" hint-size="34px,34px"></x-import>
+          <span style="flex:1;display:flex;flex-direction:column">
+            <span style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">Gymveer · nu</span>
+            <span style="font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:800">Je maandoverzicht van september staat klaar</span>
+          </span>
+        </button>
+      </sc-if>
+
+      <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;justify-content:flex-end">
+          <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(23,19,15,.4)"></div>
+          <div style="position:relative;background:var(--surface-primary);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:10px 16px 20px;max-height:88%;overflow-y:auto;box-shadow:var(--shadow-popover)">
+            <div style="width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 12px"></div>
+
+            <sc-if value="{{ sh.set }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">{{ sd.title }}</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ sd.sub }}</div>
+                <sc-if value="{{ sd.stapper }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;gap:16px;margin-top:16px">
+                    <sc-for list="{{ sd.fields }}" as="fl" hint-placeholder-count="2">
+                      <div style="flex:1;min-width:0">
+                        <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);text-align:center">{{ fl.label }}</div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+                          <button type="button" onClick="{{ fl.minus }}" aria-label="Minder" style="width:44px;height:56px;flex:none;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--display-md-size);font-weight:800;cursor:pointer">−</button>
+                          <div style="flex:1;min-width:0;text-align:center;font-size:{{ fl.fs }};line-height:var(--display-md-line);font-weight:800;white-space:nowrap">{{ fl.val }}</div>
+                          <button type="button" onClick="{{ fl.plus }}" aria-label="Meer" style="width:44px;height:56px;flex:none;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--display-md-size);font-weight:800;cursor:pointer">+</button>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ sd.snel }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <sc-for list="{{ sd.fields }}" as="fl" hint-placeholder-count="2">
+                      <div style="margin-top:16px">
+                        <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)">{{ fl.label }}</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+                          <sc-for list="{{ fl.opts }}" as="o" hint-placeholder-count="5">
+                            <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ o.on }}" onClick="{{ o.pick }}" hint-size="auto,40px">{{ o.label }}</x-import>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-top:16px">Type set</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+                  <sc-for list="{{ sd.types }}" as="o" hint-placeholder-count="4">
+                    <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ o.on }}" onClick="{{ o.pick }}" hint-size="auto,40px">{{ o.label }}</x-import>
+                  </sc-for>
+                </div>
+                <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:16px 0 6px">RPE · optioneel</div>
+                <x-import component-from-global-scope="DesignSystem_de9512.RpeInput" value="{{ sd.rpe }}" onChange="{{ sd.setRpe }}" hint-size="100%,44px"></x-import>
+                <div style="display:flex;gap:10px;margin-top:18px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ sd.save }}" hint-size="auto,44px">Opslaan</x-import>
+                  <div style="flex:1"></div>
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ sd.saveDone }}" hint-size="auto,44px">Afvinken</x-import>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sh.exMenu }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800;margin-bottom:6px">{{ wk.ex.name }}</div>
+                <sc-for list="{{ exMenuItems }}" as="o" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ o.go }}" style="width:100%;display:flex;align-items:center;gap:12px;border:none;border-top:1px solid var(--border);background:transparent;padding:0;min-height:52px;text-align:left;cursor:pointer;color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:700">
+                    <span style="color:var(--ink-soft);display:grid;place-items:center;width:24px"><x-import component-from-global-scope="DesignSystem_de9512.Icon" name="{{ o.icon }}" size="{{ 18 }}" hint-size="18px,18px"></x-import></span>{{ o.label }}
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sh.note }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Vaste notitie</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Elke sessie zichtbaar bij {{ wk.ex.name }}</div>
+                <textarea value="{{ draftNote }}" onChange="{{ onDraftNote }}" placeholder="Stoelstand, repbereik, aanwijzingen" style="margin-top:12px;width:100%;box-sizing:border-box;min-height:84px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:600;padding:12px;resize:none;outline:none"></textarea>
+                <div style="display:flex;justify-content:flex-end;margin-top:14px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ saveNote }}" hint-size="auto,44px">Opslaan</x-import>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sh.meal }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">{{ md.meal }}</div>
+                <textarea value="{{ md.note }}" onChange="{{ md.onNote }}" placeholder="Wat at je? In gewone taal." style="margin-top:12px;width:100%;box-sizing:border-box;min-height:84px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);line-height:var(--body-md-line);font-weight:600;padding:12px;resize:none;outline:none"></textarea>
+                <input value="{{ md.recipe }}" onChange="{{ md.onRecipe }}" placeholder="Receptlink (optioneel)" style="margin-top:8px;width:100%;box-sizing:border-box;height:44px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:600;padding:0 12px;outline:none">
+                <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px">
+                  <sc-for list="{{ md.fields }}" as="f" hint-placeholder-count="4">
+                    <div>
+                      <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);text-align:center">{{ f.label }}</div>
+                      <input inputmode="numeric" placeholder="–" value="{{ f.value }}" onChange="{{ f.onInput }}" style="margin-top:4px;width:100%;box-sizing:border-box;height:44px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:800;text-align:center;outline:none">
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:14px;border:1px dashed var(--border);border-radius:var(--radius-md);padding:8px 8px 8px 12px">
+                  <div style="flex:1;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">{{ md.estimateNote }}</div>
+                  <x-import component-from-global-scope="DesignSystem_de9512.Chip" onClick="{{ md.estimate }}" hint-size="auto,40px">Schat macro's</x-import>
+                </div>
+                <div style="display:flex;justify-content:flex-end;margin-top:14px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ md.save }}" hint-size="auto,44px">Opslaan</x-import>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sh.coach }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">{{ coach.title }}</div>
+                <div style="font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;color:var(--ink-soft)">Plak dit in je Claude-chat</div>
+                <div style="margin-top:12px;background:var(--surface-tint);border-radius:var(--radius-md);padding:12px;font-size:var(--body-sm-size);line-height:var(--body-sm-line);font-weight:600;white-space:pre-wrap">{{ coach.text }}</div>
+                <div style="display:flex;justify-content:flex-end;margin-top:14px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ copyCoach }}" hint-size="auto,44px">{{ coach.btn }}</x-import>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sh.abort }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Workout afbreken?</div>
+                <div style="font-size:var(--body-md-size);line-height:var(--body-md-line);color:var(--ink-soft);font-weight:600;margin-top:6px">Er wordt niets opgeslagen. Je sets en de tijd verdwijnen.</div>
+                <div style="display:flex;gap:10px;margin-top:18px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" variant="quiet" onClick="{{ closeSheet }}" hint-size="auto,44px">Doorgaan</x-import>
+                  <div style="flex:1"></div>
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ abortWorkout }}" hint-size="auto,44px">Afbreken</x-import>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sh.folder }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Nieuw mapje</div>
+                <input value="{{ folderName }}" onChange="{{ onFolderName }}" placeholder="Naam, bijv. Split" style="margin-top:12px;width:100%;box-sizing:border-box;height:48px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:700;padding:0 12px;outline:none">
+                <div style="display:flex;justify-content:flex-end;margin-top:14px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" onClick="{{ saveFolder }}" hint-size="auto,44px">Aanmaken</x-import>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sh.custom }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:var(--title-size);line-height:var(--title-line);font-weight:800">Eigen oefening</div>
+                <input value="{{ cd.name }}" onChange="{{ cd.onName }}" placeholder="Naam, bijv. Hip Abduction (Machine)" style="margin-top:12px;width:100%;box-sizing:border-box;height:48px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:700;padding:0 12px;outline:none">
+                <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px">Type</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <sc-for list="{{ cd.types }}" as="o" hint-placeholder-count="5">
+                    <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ o.on }}" onClick="{{ o.pick }}" hint-size="auto,40px">{{ o.label }}</x-import>
+                  </sc-for>
+                </div>
+                <div style="font-size:var(--caption-size);line-height:var(--caption-line);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px">Spiergroep</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <sc-for list="{{ cd.groups }}" as="o" hint-placeholder-count="6">
+                    <x-import component-from-global-scope="DesignSystem_de9512.Chip" selected="{{ o.on }}" onClick="{{ o.pick }}" hint-size="auto,40px">{{ o.label }}</x-import>
+                  </sc-for>
+                </div>
+                <input value="{{ cd.note }}" onChange="{{ cd.onNote }}" placeholder="Vaste notitie (stoelstand, repbereik)" style="margin-top:14px;width:100%;box-sizing:border-box;height:44px;border:none;border-radius:var(--radius-md);background:var(--surface-tint);color:var(--ink);font-family:inherit;font-size:var(--body-md-size);font-weight:600;padding:0 12px;outline:none">
+                <div style="display:flex;justify-content:flex-end;margin-top:14px">
+                  <x-import component-from-global-scope="DesignSystem_de9512.Button" disabled="{{ cd.invalid }}" onClick="{{ cd.save }}" hint-size="auto,44px">Toevoegen</x-import>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:none;display:flex;flex-direction:column;gap:10px;padding:0 16px 14px">
+      <sc-if value="{{ pr }}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="DesignSystem_de9512.Toast" title="{{ pr.title }}" detail="{{ pr.detail }}" onDismiss="{{ dismissPr }}" hint-size="100%,56px"></x-import>
+      </sc-if>
+      <sc-if value="{{ notice }}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="DesignSystem_de9512.Toast" icon="check" fill="var(--accent-mint)" color="var(--accent-mint-ink)" title="{{ notice.title }}" detail="{{ notice.detail }}" onDismiss="{{ dismissNotice }}" hint-size="100%,56px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showRest }}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="DesignSystem_de9512.RestTimerBar" time="{{ restTime }}" onMinus="{{ restMinus }}" onPlus="{{ restPlus }}" onSkip="{{ restSkip }}" hint-size="100%,64px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showMini }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ resume }}" style="display:flex;align-items:center;gap:10px;min-height:48px;border:none;border-radius:var(--radius-lg);background:var(--accent-orange);color:var(--accent-orange-ink);padding:0 14px;cursor:pointer;font-family:inherit;text-align:left">
+          <span style="flex:1;font-size:var(--body-md-size);font-weight:800">{{ wk.title }} · {{ elapsedTime }}</span>
+          <span style="font-size:var(--button-size);font-weight:800">Verder</span>
+        </button>
+      </sc-if>
+      <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="DesignSystem_de9512.BottomNav" active="{{ tab }}" onChange="{{ onNav }}" hint-size="100%,64px"></x-import>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;invoer&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;stapper&quot;,&quot;snelkeuze&quot;],&quot;default&quot;:&quot;stapper&quot;,&quot;tsType&quot;:&quot;'stapper'|'snelkeuze'&quot;,&quot;section&quot;:&quot;Set loggen&quot;},&quot;rustTijd&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:30,&quot;max&quot;:240,&quot;step&quot;:15,&quot;unit&quot;:&quot;s&quot;,&quot;default&quot;:90,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Set loggen&quot;}}">
+class Component extends DCLogic {
+  static LIB = [
+    { id: "legpress", name: "Leg Press (Machine)", group: "Benen", equip: "Machine", type: "kg", note: "Stoel 5 · links eerst", target: "8–12", prev: [[140, 10], [140, 9], [135, 10]] },
+    { id: "chest", name: "Chest Press (Machine)", group: "Borst", equip: "Machine", type: "kg", note: "Stoel 4", target: "8–12", prev: [[34, 9], [34, 8], [32, 10]] },
+    { id: "lat", name: "Lat Pulldown (Cable)", group: "Rug", equip: "Kabel", type: "kg", note: "Kniesteun 3", target: "10–12", prev: [[52, 11], [52, 10], [50, 11]] },
+    { id: "pullup", name: "Pull Up (Assisted)", group: "Rug", equip: "Machine", type: "assist", note: "Knieën op het kussen", target: "6–8", prev: [[18, 7], [18, 6], [20, 8]] },
+    { id: "shoulder", name: "Shoulder Press (Machine)", group: "Schouders", equip: "Machine", type: "kg", note: "Stoel 6", target: "8–10", prev: [[25, 9], [25, 8], [22.5, 10]] },
+    { id: "squat", name: "Squat (Smith Machine)", group: "Benen", equip: "Smith", type: "kg", note: "Voeten iets naar voren", target: "8–10", prev: [[50, 8], [50, 8], [45, 10]] },
+    { id: "row", name: "Seated Cable Row – V Grip", group: "Rug", equip: "Kabel", type: "kg", note: "", target: "10–12", prev: [[45, 12], [45, 11], [45, 10]] },
+    { id: "hipthrust", name: "Hip Thrust (Machine)", group: "Billen", equip: "Machine", type: "kg", note: "Pauze bovenin", target: "10–12", prev: [[80, 12], [80, 11], [80, 10]] },
+    { id: "legcurl", name: "Seated Leg Curl", group: "Benen", equip: "Machine", type: "kg", note: "Rugleuning 4", target: "10–12", prev: [[35, 12], [35, 11], [35, 10]] },
+    { id: "rdl", name: "Romanian Deadlift (Cable)", group: "Benen", equip: "Kabel", type: "kg", note: "", target: "10–12", prev: [[40, 12], [40, 12], [40, 11]] },
+    { id: "abductor", name: "Hip Abduction (Machine)", group: "Billen", equip: "Machine", type: "kg", note: "", target: "12–15", prev: [[55, 15], [55, 14], [55, 13]] },
+    { id: "run", name: "Hardlopen (Loopband)", group: "Cardio", equip: "Loopband", type: "afstand", note: "Helling 1", target: "5 km", prev: [[5, 1740]] },
+    { id: "pushup", name: "Push-up", group: "Borst", equip: "Lichaamsgewicht", type: "reps", note: "Op de knieën als het niet meer gaat", target: "10–15", prev: [[null, 12], [null, 11], [null, 10]] },
+    { id: "kneeraise", name: "Knee Raise", group: "Core", equip: "Captain's chair", type: "reps", note: "", target: "12–15", prev: [[null, 15], [null, 14], [null, 12]] },
+    { id: "plank", name: "Plank", group: "Core", equip: "Lichaamsgewicht", type: "duur", note: "", target: "45 s", prev: [[null, 50], [null, 45], [null, 40]] },
+    { id: "wallsit", name: "Wall Sit", group: "Benen", equip: "Lichaamsgewicht", type: "duur", note: "", target: "60 s", prev: [[null, 60], [null, 55]] }
+  ];
+  static SERIES = {
+    legpress: { m: [60, 70, 80, 88, 95, 100, 105, 110, 115, 120, 122, 126, 130, 134, 137, 140], w: [136, 138, 140, 140] },
+    chest: { m: [25, 26, 27, 27, 28, 29, 29, 30, 30, 31, 31, 32, 32, 33, 33, 34], w: [33, 33, 34, 34] },
+    pullup: { m: [36, 34, 32, 32, 30, 28, 27, 26, 25, 24, 22, 22, 20, 20, 18, 18], w: [20, 20, 18, 18] }
+  };
+  static MONTHS = ["jun 2025", "jul 2025", "aug 2025", "sep 2025", "okt 2025", "nov 2025", "dec 2025", "jan 2026", "feb 2026", "mrt 2026", "apr 2026", "mei 2026", "jun 2026", "jul 2026", "aug 2026", "sep 2026"];
+  static WEEKS = ["31 aug", "7 sep", "14 sep", "21 sep"];
+  static VOL = { m: [21000, 26000, 30000, 33500, 36000, 38000, 41000, 43500, 46000, 49000, 50500, 53000, 56000, 58000, 65000, 62400], w: [14200, 15100, 14800, 15300] };
+  static RANGE_STATS = { "4w": ["3", "12", "58.300 kg"], "3m": ["8", "38", "182.400 kg"], "1j": ["34", "124", "594.000 kg"], "Alles": ["52", "136", "745.900 kg"] };
+  static DAILY = [70.8, 71.4, 70.6, 70.9, 70.2, 70.5, 70.9, 70.1, 69.8, 70.3, 69.6, 69.9, 69.4, 69.7, 69.1, 69.5, 68.9, 69.2, 68.6, 68.9, 68.4];
+  static mk(id) { const e = Component.LIB.find((x) => x.id === id); return { id, sets: (e.prev.length ? e.prev : [["", ""], ["", ""], ["", ""]]).map((p) => ({ w: p[0] === null ? "" : p[0], r: p[1] })) }; }
+  static SPEC = {
+    kg: [{ k: "w", label: "Kg", unit: "kg", step: 2.5 }, { k: "r", label: "Reps", step: 1 }],
+    assist: [{ k: "w", label: "Assist", unit: "kg", step: 2.5 }, { k: "r", label: "Reps", step: 1 }],
+    reps: [{ k: "r", label: "Reps", step: 1 }],
+    duur: [{ k: "r", label: "Tijd", time: true, step: 5 }],
+    afstand: [{ k: "w", label: "Km", unit: "km", step: 0.5 }, { k: "r", label: "Tijd", time: true, step: 30 }]
+  };
+  static FILLS = ["var(--accent-peach)", "var(--accent-mint)", "var(--accent-blue-light)", "var(--accent-lavender)", "var(--accent-pink)"];
+
+  state = {
+    screen: "home", tab: "home", theme: "light", online: true, push: false,
+    library: Component.LIB.map((e) => ({ ...e })),
+    templates: [
+      { id: "a", name: "Full Body A", folder: "fb", days: ["Ma"], items: [Component.mk("legpress"), Component.mk("chest"), Component.mk("lat"), Component.mk("pullup"), Component.mk("shoulder")] },
+      { id: "b", name: "Full Body B", folder: "fb", days: ["Do"], items: [Component.mk("squat"), Component.mk("row"), Component.mk("hipthrust"), Component.mk("legcurl"), Component.mk("chest")] },
+      { id: "c", name: "Full Body C", folder: "fb", days: ["Za"], items: [Component.mk("rdl"), Component.mk("lat"), Component.mk("abductor"), Component.mk("shoulder"), Component.mk("pullup")] },
+      { id: "d", name: "Core + cardio", folder: "fb", days: [], items: [Component.mk("run"), Component.mk("pushup"), Component.mk("kneeraise"), Component.mk("plank"), Component.mk("wallsit")] }
+    ],
+    folders: [{ id: "fb", name: "Full body", open: true }, { id: "split", name: "Split", open: false }], folderName: "",
+    recent: [
+      { title: "Full Body A", sub: "ma 21 sep · 54 min", vol: "6.480 kg" },
+      { title: "Full Body C", sub: "za 19 sep · 49 min", vol: "5.920 kg" },
+      { title: "Full Body B", sub: "do 17 sep · 51 min", vol: "6.110 kg" }
+    ],
+    workout: null, exIdx: 0, startAt: 0, restEnd: 0, pr: null, notice: null,
+    summary: null, sessionRpe: null, sessionNote: "",
+    sheet: null, draft: null, draftNote: "", coachKind: "training", copied: false, custom: null,
+    editTpl: null, pick: null, search: "", group: "Alle",
+    rng: "Alles", metrics: {},
+    daily: Component.DAILY.slice(), measureDue: true, lastMeasure: "9 september",
+    fields: [
+      { label: "Borst", value: 91.0, start: 90.0 }, { label: "Onderborst", value: 76.5, start: 78.5 },
+      { label: "Taille", value: 71.5, start: 75.0 }, { label: "Buik / navel", value: 79.0, start: 83.0 },
+      { label: "Heupen", value: 97.0, start: 98.5 }, { label: "Billen", value: 99.5, start: 99.0 },
+      { label: "Bovenbeen L", value: 58.0, start: 56.5 }, { label: "Bovenbeen R", value: 58.5, start: 57.0 },
+      { label: "Bovenarm L", value: 30.0, start: 29.0 }, { label: "Bovenarm R", value: null, start: null }
+    ],
+    entry: null,
+    dayOff: 0,
+    mealsByDay: {
+      "-1": [
+        { meal: "Ontbijt", accent: "var(--accent-peach)", note: "Havermout met skyr en banaan", recipe: "", kcal: 410, protein: 30, fat: 11, carbs: 52 },
+        { meal: "Lunch", accent: "var(--accent-mint)", note: "", recipe: "", kcal: null, protein: null, fat: null, carbs: null },
+        { meal: "Snack", accent: "var(--accent-lavender)", note: "Eiwitshake", recipe: "", kcal: 160, protein: 25, fat: 2, carbs: 8 },
+        { meal: "Diner", accent: "var(--accent-blue-light)", note: "Linzencurry met rijst", recipe: "", kcal: 620, protein: 28, fat: 18, carbs: 84 },
+        { meal: "Extra", accent: "var(--accent-pink)", note: "", recipe: "", kcal: null, protein: null, fat: null, carbs: null }
+      ],
+      "1": ["Ontbijt", "Lunch", "Snack", "Diner", "Extra"].map((m, i) => ({ meal: m, accent: ["var(--accent-peach)", "var(--accent-mint)", "var(--accent-lavender)", "var(--accent-blue-light)", "var(--accent-pink)"][i], note: "", recipe: "", kcal: null, protein: null, fat: null, carbs: null }))
+    },
+    meals: [
+      { meal: "Ontbijt", accent: "var(--accent-peach)", note: "Havermout met skyr, blauwe bessen en een schep pindakaas", recipe: "", kcal: 430, protein: 32, fat: 14, carbs: 48 },
+      { meal: "Lunch", accent: "var(--accent-mint)", note: "Twee boterhammen hüttenkäse, handje noten, appel", recipe: "", kcal: 480, protein: 28, fat: 19, carbs: 52 },
+      { meal: "Snack", accent: "var(--accent-lavender)", note: "Eiwitshake", recipe: "", kcal: 160, protein: 25, fat: 2, carbs: 8 },
+      { meal: "Diner", accent: "var(--accent-blue-light)", note: "", recipe: "", kcal: null, protein: null, fat: null, carbs: null },
+      { meal: "Extra", accent: "var(--accent-pink)", note: "", recipe: "", kcal: null, protein: null, fat: null, carbs: null }
+    ],
+    goal: { kcal: 1800, protein: 130, fat: 60, carbs: 185 },
+    schedule: "2 weken", reminder: true,
+    imp: { step: 1, merges: null, links: {} }
+  };
+
+  
+  componentWillUnmount() { clearTimeout(this.nt); clearTimeout(this.pt); }
+  tick() {
+    if (this.state.restEnd && this.restS() <= 0) this.setState({ restEnd: 0 });
+    else this.setState({ now: Date.now() });
+  }
+  elapsedS() { return this.state.startAt ? Math.floor((Date.now() - this.state.startAt) / 1000) : 0; }
+  restS() { return this.state.restEnd ? Math.max(0, Math.ceil((this.state.restEnd - Date.now()) / 1000)) : 0; }
+
+  curMeals() { return this.state.dayOff === 0 ? this.state.meals : this.state.mealsByDay[String(this.state.dayOff)]; }
+  setMeals(m) { if (this.state.dayOff === 0) this.setState({ meals: m, sheet: null, draft: null }); else this.setState({ mealsByDay: { ...this.state.mealsByDay, [String(this.state.dayOff)]: m }, sheet: null, draft: null }); }
+  fmt(v) { return v === null || v === undefined || v === "" ? "" : String(Math.round(v * 10) / 10).replace(".", ","); }
+  kg(n) { return Math.round(n).toLocaleString("nl-NL") + " kg"; }
+  mmss(t) { return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); }
+  lib(id) { return this.state.library.find((e) => e.id === id); }
+  static MNAME = { delts: "Schouders", chest: "Borst", biceps: "Biceps", triceps: "Triceps", forearms: "Onderarmen", abs: "Buikspieren", obliques: "Schuine buikspieren", quads: "Quadriceps", adductors: "Adductoren", abductors: "Abductoren", glutes: "Billen", hamstrings: "Hamstrings", calves: "Kuiten", traps: "Trapezius", lats: "Brede rugspier", lowerback: "Onderrug" };
+  static MUSC = {
+    legpress: [["quads", "glutes"], ["hamstrings", "adductors"]], chest: [["chest"], ["delts", "triceps"]], lat: [["lats"], ["biceps", "traps", "forearms"]],
+    pullup: [["lats"], ["biceps", "traps", "forearms"]], shoulder: [["delts"], ["triceps", "traps"]], squat: [["quads", "glutes"], ["hamstrings", "adductors", "lowerback", "abs"]],
+    row: [["lats", "traps"], ["biceps", "delts", "forearms"]], hipthrust: [["glutes"], ["hamstrings", "quads"]], legcurl: [["hamstrings"], ["calves"]],
+    rdl: [["hamstrings", "glutes"], ["lowerback", "traps", "forearms"]], abductor: [["abductors", "glutes"], []], run: [["quads", "calves"], ["hamstrings", "glutes"]],
+    pushup: [["chest"], ["delts", "triceps", "abs"]], kneeraise: [["abs"], ["obliques", "forearms"]], plank: [["abs"], ["obliques", "delts", "lowerback", "glutes"]], wallsit: [["quads"], ["glutes", "calves"]]
+  };
+  static GMUSC = { Benen: [["quads", "hamstrings"], ["glutes"]], Billen: [["glutes"], ["hamstrings"]], Borst: [["chest"], ["delts", "triceps"]], Rug: [["lats"], ["biceps", "traps"]], Schouders: [["delts"], ["triceps"]], Core: [["abs"], ["obliques"]], Cardio: [["quads", "calves"], ["glutes"]] };
+  bodyFig(P, S) {
+    const h = React.createElement;
+    const col = (k) => (P.includes(k) ? "var(--accent-lavender)" : S.includes(k) ? "color-mix(in oklab, var(--accent-lavender) 42%, var(--surface-primary))" : "color-mix(in oklab, var(--ink-soft) 16%, var(--surface-tint))");
+    const sil = "var(--surface-tint)";
+    const base = [
+      h("ellipse", { key: "hd", cx: 60, cy: 20, rx: 11, ry: 13, fill: sil }),
+      h("rect", { key: "nk", x: 54, y: 30, width: 12, height: 12, rx: 3, fill: sil }),
+      h("path", { key: "to", d: "M40 42 Q60 38 80 42 L86 50 Q84 80 78 104 Q76 114 81 128 L83 142 L37 142 L39 128 Q44 114 42 104 Q36 80 34 50 Z", fill: sil }),
+      ...[0, 1].map((m) => h("g", { key: "lim" + m, transform: m ? "translate(120,0) scale(-1,1)" : undefined },
+        h("path", { d: "M35 45 Q26 47 25 60 L22 96 L17 128 Q19 133 24 131 L30 98 L37 64 Z", fill: sil }),
+        h("path", { d: "M38 134 L60 138 L59 180 L56 230 L46 230 L44 182 Q37 160 38 134 Z", fill: sil })))
+    ];
+    const E = (k, cx, cy, rx, ry) => ({ k, cx, cy, rx, ry });
+    const Pt = (k, d) => ({ k, d });
+    const front = [E("delts", 35, 50, 7, 8), Pt("chest", "M44 50 Q52 46 59 49 L59 64 Q50 68 43 62 Z"), E("biceps", 29.5, 70, 4.5, 11), E("forearms", 23.5, 105, 3.5, 12), Pt("obliques", "M44 70 L50 70 L50 104 L46 106 Q44 88 44 70 Z"), E("adductors", 58.2, 154, 2.4, 11), E("quads", 50, 162, 7.5, 22), E("calves", 50.5, 205, 3.8, 14)];
+    const back = [Pt("traps", "M50 40 Q60 36 70 40 L66 56 L60 62 L54 56 Z"), E("delts", 35, 50, 7, 8), Pt("lats", "M42 56 L58 64 L58 96 Q48 92 44 80 Z"), E("triceps", 29.5, 70, 4.5, 11), E("forearms", 23.5, 105, 3.5, 12), E("abductors", 41.5, 127, 3.2, 8), E("glutes", 51, 134, 8.5, 10), E("hamstrings", 50, 168, 7, 18), E("calves", 50.5, 204, 5, 13)];
+    const mid = { front: [{ k: "abs", x: 52, y: 68, w: 16, h: 38 }], back: [{ k: "lowerback", x: 53, y: 96, w: 14, h: 14 }] };
+    const draw = (list, side) => [
+      ...mid[side].map((r) => h("rect", { key: r.k, x: r.x, y: r.y, width: r.w, height: r.h, rx: 5, fill: col(r.k), stroke: "var(--surface-primary)", strokeWidth: 1 })),
+      ...list.flatMap((s, i) => [0, 1].map((m) => s.d
+        ? h("path", { key: side + i + m, d: s.d, transform: m ? "translate(120,0) scale(-1,1)" : undefined, fill: col(s.k), stroke: "var(--surface-primary)", strokeWidth: 1 })
+        : h("ellipse", { key: side + i + m, cx: m ? 120 - s.cx : s.cx, cy: s.cy, rx: s.rx, ry: s.ry, fill: col(s.k), stroke: "var(--surface-primary)", strokeWidth: 1 })))
+    ];
+    const fig = (side, label) => h("div", { key: side, style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 6 } },
+      h("svg", { viewBox: "0 0 120 236", width: 120, height: 236, "aria-label": label }, ...base, ...draw(side === "front" ? front : back, side)),
+      h("span", { style: { fontSize: "var(--caption-size)", lineHeight: "var(--caption-line)", fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--ink-soft)" } }, label));
+    return h("div", { "data-om-raster": "", style: { display: "flex", justifyContent: "center", gap: 28 } }, fig("front", "Voor"), fig("back", "Achter"));
+  }
+  exDetail(e, back) {
+    const [P, S] = Component.MUSC[e.id] || Component.GMUSC[e.group] || [[], []];
+    const names = (l) => l.map((k) => Component.MNAME[k]).join(", ");
+    const D = ["18 sep", "14 sep", "11 sep", "7 sep", "4 sep", "31 aug", "28 aug", "24 aug"];
+    const t = e.type, f = (v) => this.fmt(v);
+    const sess = e.prev.length ? D.map((date, k) => {
+      const d = Math.floor((k + 1) / 2);
+      const sets = e.prev.map((p) => t === "kg" ? [p[0] - (p[0] >= 100 ? 5 : 2.5) * d, p[1]] : t === "assist" ? [p[0] + 2 * d, p[1]] : t === "reps" ? [null, Math.max(1, p[1] - d)] : t === "duur" ? [null, Math.max(10, p[1] - 5 * d)] : [p[0], p[1] + 25 * k]);
+      const metric = t === "kg" ? Math.max(...sets.map((x) => x[0])) : t === "assist" ? Math.min(...sets.map((x) => x[0])) : t === "afstand" ? sets[0][1] / sets[0][0] / 60 : Math.max(...sets.map((x) => x[1]));
+      return { date, sets, metric };
+    }) : [];
+    const lowerBetter = t === "assist" || t === "afstand";
+    const better = (a, b) => (lowerBetter ? a < b : a > b);
+    const setTxt = (x) => t === "kg" || t === "assist" ? f(x[0]) + " kg × " + x[1] : t === "reps" ? x[1] + "×" : t === "duur" ? x[1] + " s" : f(x[0]) + " km · " + this.mmss(x[1]);
+    const hist = sess.map((s, k) => ({ date: s.date, sets: s.sets.map(setTxt).join(" · "), pr: k < sess.length - 1 && sess.slice(k + 1).every((o) => better(s.metric, o.metric)) }));
+    const all = sess.flatMap((s) => s.sets.map((x) => ({ x, date: s.date })));
+    const pick = (fn) => all.reduce((b, c) => (!b || fn(c.x) > fn(b.x) ? c : b), null);
+    let rec = [];
+    if (all.length) {
+      if (t === "kg") { const a = pick((x) => x[0] * 1000 + x[1]), b = pick((x) => x[1] * 1000 + x[0]), c = pick((x) => x[0] * x[1]); rec = [["Zwaarste set", a, setTxt(a.x)], ["Meeste herhalingen", b, setTxt(b.x)], ["Grootste setvolume", c, this.kg(c.x[0] * c.x[1])]]; }
+      else if (t === "assist") { const a = pick((x) => -x[0] * 1000 + x[1]), b = pick((x) => x[1] * 1000 - x[0]); rec = [["Minste assist", a, setTxt(a.x)], ["Meeste herhalingen", b, setTxt(b.x)]]; }
+      else if (t === "reps") { const a = pick((x) => x[1]); const ts = sess.reduce((b, s) => { const n = s.sets.reduce((q, x) => q + x[1], 0); return !b || n > b.n ? { n, date: s.date } : b; }, null); rec = [["Meeste herhalingen", a, a.x[1] + "×"], ["Meeste in één sessie", ts, ts.n + "×"]]; }
+      else if (t === "duur") { const a = pick((x) => x[1]); const ts = sess.reduce((b, s) => { const n = s.sets.reduce((q, x) => q + x[1], 0); return !b || n > b.n ? { n, date: s.date } : b; }, null); rec = [["Langste hold", a, a.x[1] + " s"], ["Meeste tijd in één sessie", ts, this.mmss(ts.n)]]; }
+      else { const a = pick((x) => -x[1] / x[0]); rec = [["Snelste " + f(a.x[0]) + " km", a, this.mmss(a.x[1])], ["Beste tempo", a, this.mmss(Math.round(a.x[1] / a.x[0])) + " /km"]]; }
+    }
+    const chrono = sess.slice().reverse();
+    return {
+      name: e.name, sub: e.equip + " · " + e.group, back,
+      fig: this.bodyFig(P, S), prim: names(P), sec: names(S), hasSec: S.length > 0,
+      records: rec.map((r, i) => ({ first: i === 0, name: r[0], sub: r[1].date, val: r[2] })),
+      chartTitle: { kg: "Zwaarste set per sessie", assist: "Assist per sessie", reps: "Meeste herhalingen per sessie", duur: "Langste hold per sessie", afstand: "Tempo per sessie" }[t] || "Verloop",
+      note: t === "assist" ? "Het gewicht is de assist. Lager is beter." : t === "afstand" ? "Minuten per km. Lager is sneller." : "",
+      chartVals: chrono.map((s) => Math.round(s.metric * 100) / 100), chartLabels: chrono.map((s) => s.date),
+      fmtV: (v) => t === "kg" || t === "assist" ? f(v) + " kg" : t === "reps" ? v + "×" : t === "duur" ? v + " s" : this.mmss(Math.round(v * 60)) + " /km",
+      hist, hasHist: hist.length > 0, noHist: !hist.length
+    };
+  }
+  clone(o) { return JSON.parse(JSON.stringify(o)); }
+  notify(title, detail) { clearTimeout(this.nt); this.setState({ notice: { title, detail: detail || "" } }); this.nt = setTimeout(() => this.setState({ notice: null }), 3200); }
+  spec(e) { return Component.SPEC[e.type] || Component.SPEC.kg; }
+  tfmt(t) { if (t === "" || t === null || t === undefined) return ""; t = Number(t); return t >= 60 ? Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0") : t + " s"; }
+  tparse(v) { const s = String(v).trim(); if (!s) return NaN; if (s.includes(":")) { const [m, x] = s.split(":"); return (parseInt(m, 10) || 0) * 60 + (parseInt(x, 10) || 0); } return parseInt(s, 10); }
+  cell(e, k, v) { const f = this.spec(e).find((x) => x.k === k); if (v === "" || v === null || v === undefined) return ""; return f && f.time ? this.tfmt(v) : this.fmt(v); }
+  label(e, w, r) {
+    if (r === null || r === undefined || r === "") return "—";
+    switch (e.type) {
+      case "assist": return "assist " + this.fmt(w) + " kg × " + r;
+      case "reps": return r + " reps";
+      case "duur": return this.tfmt(r);
+      case "afstand": return this.fmt(w) + " km · " + this.tfmt(r);
+      default: return this.fmt(w) + " kg × " + r;
+    }
+  }
+  better(e, a, b) {
+    if (!b) return false;
+    switch (e.type) {
+      case "assist": return a.w < b.w || (a.w === b.w && a.r > b.r);
+      case "reps": case "duur": return a.r > b.r;
+      case "afstand": return a.w > b.w || (a.w === b.w && a.r < b.r);
+      default: return a.w > b.w || (a.w === b.w && a.r > b.r);
+    }
+  }
+  targetLine(e) { return "Doel " + e.target + (["kg", "assist", "reps"].includes(e.type) ? " reps" : ""); }
+  restFor() { return this.props.rustTijd ?? 90; }
+
+  bestOf(e) {
+    if (!e.prev.length) return null;
+    return e.prev.reduce((b, p) => { const c = { w: p[0], r: p[1] }; return !b || this.better(e, c, b) ? c : b; }, null);
+  }
+  buildEx(id, plan) {
+    const e = this.lib(id);
+    const arr = Array.isArray(plan) ? plan : Array.from({ length: plan }, () => null);
+    const sets = arr.map((t, i) => {
+      const p = e.prev.length ? e.prev[Math.min(i, e.prev.length - 1)] : null;
+      const tw = t ? parseFloat(String(t.w).replace(",", ".")) : NaN;
+      const timeR = this.spec(e).some((x) => x.k === "r" && x.time);
+      const tr = t ? (timeR ? this.tparse(t.r) : parseInt(t.r, 10)) : NaN;
+      return { pw: p ? p[0] : null, pr: p ? p[1] : null, w: !isNaN(tw) ? tw : (p && p[0] !== null ? p[0] : ""), r: "", tr: !isNaN(tr) ? tr : (p ? p[1] : ""), done: false, type: "normal", rpe: null };
+    });
+    return { id, sets, best: this.bestOf(e) };
+  }
+  startTpl(t) {
+    if (!t.items.length) return this.notify("Schema is nog leeg", "Voeg eerst oefeningen toe");
+    this.setState({ workout: { title: t.name, prs: [], ex: t.items.map((it) => ({ ...this.buildEx(it.id, it.sets), timer: it.timer || "down" })) }, run: null, exIdx: 0, startAt: Date.now(), restEnd: 0, screen: "workout", tab: "home", sheet: null, pr: null });
+  }
+  go(screen) {
+    const tabs = { home: "home", workout: "home", progress: "progress", recap: "progress", measure: "measure", measureEntry: "measure", measureDetail: "measure", food: "food" };
+    const n = { screen, sheet: null, push: false };
+    if (tabs[screen]) n.tab = tabs[screen];
+    if (screen === "workout" && !this.state.workout) return this.startTpl(this.state.templates[0]);
+    if (screen === "summary" && !this.state.summary) {
+      n.summary = { title: "Full Body A", dur: "54 min", strip: [{ label: "Duur", value: "54:10" }, { label: "Volume", value: "6.620 kg" }, { label: "Sets", value: "15", accent: "var(--accent-orange-fg)" }], prs: [{ name: "Leg Press (Machine)", val: "140 kg × 11" }], rows: [] };
+      n.summary.rows = this.state.templates[0].items.map((it) => { const e = this.lib(it.id); return { name: e.name, sub: "3 sets", val: this.fmt(e.prev[0][0]) + " kg × " + e.prev[0][1] }; });
+    }
+    if (screen === "tplEdit" && !this.state.editTpl) n.editTpl = this.state.templates[0].id;
+    if (screen === "measureEntry") n.entry = { weight: "", vals: this.state.fields.map(() => "") };
+    if (screen === "import") n.imp = { step: 1, merges: null, links: {} };
+    if (screen === "library") n.pick = null;
+    this.setState(n);
+  }
+
+  toggleSet(i) {
+    const W = this.clone(this.state.workout);
+    const ex = W.ex[this.state.exIdx];
+    const s = ex.sets[i];
+    const e = this.lib(ex.id);
+    let pr = null;
+    if (s.done) s.done = false;
+    else {
+      const hasW = this.spec(e).some((x) => x.k === "w");
+      if (s.r === "" || s.r === null) s.r = s.tr || s.pr || (e.type === "duur" ? 45 : 10);
+      if (hasW && (s.w === "" || s.w === null)) s.w = 0;
+      s.done = true;
+      const b = ex.best;
+      if (s.type !== "warmup" && b && this.better(e, { w: s.w, r: s.r }, b)) {
+        pr = { title: "Nieuw record — " + e.name, detail: this.label(e, s.w, s.r) + " · vorige beste " + this.label(e, b.w, b.r) };
+        W.prs.push({ name: e.name, val: this.label(e, s.w, s.r) });
+        ex.best = { w: s.w, r: s.r };
+      }
+    }
+    const n = { workout: W };
+    if (s.done) n.restEnd = Date.now() + this.restFor() * 1000;
+    if (pr) { n.pr = pr; clearTimeout(this.pt); this.pt = setTimeout(() => this.setState({ pr: null }), 5000); }
+    this.setState(n);
+  }
+  startRun(i) {
+    const W = this.state.workout; const x = W.ex[this.state.exIdx]; const q = x.sets[i];
+    const target = Number(q.r !== "" ? q.r : (q.tr || q.pr || 45)) || 45;
+    this.setState({ run: { ex: this.state.exIdx, i, start: Date.now(), mode: x.timer || "down", target }, restEnd: 0 });
+  }
+  stopRun(full) {
+    const run = this.state.run; if (!run) return;
+    const secs = Math.round((Date.now() - run.start) / 1000);
+    const r = run.mode === "down" ? (full ? run.target : Math.min(secs, run.target)) : Math.max(1, secs);
+    const W = this.clone(this.state.workout);
+    W.ex[run.ex].sets[run.i].r = r;
+    const back = this.state.exIdx;
+    this.setState({ workout: W, run: null, exIdx: run.ex }, () => { this.toggleSet(run.i); if (back !== run.ex) this.setState({ exIdx: back }); });
+  }
+  openSet(i) {
+    const ex = this.state.workout.ex[this.state.exIdx];
+    const s = ex.sets[i];
+    const e = this.lib(ex.id);
+    this.setState({ sheet: "set", draft: { i, w: s.w === "" ? (s.pw || (e.type === "afstand" ? 5 : 20)) : s.w, r: s.r === "" ? (s.tr || s.pr || (e.type === "duur" ? 45 : 10)) : s.r, type: s.type, rpe: s.rpe } });
+  }
+  saveSet(done) {
+    const d = this.state.draft;
+    const W = this.clone(this.state.workout);
+    const s = W.ex[this.state.exIdx].sets[d.i];
+    Object.assign(s, { w: d.w, r: d.r, type: d.type, rpe: d.rpe, done: false });
+    this.setState({ workout: W, sheet: null }, () => { if (done) this.toggleSet(d.i); });
+  }
+  totals(W) {
+    let vol = 0, sets = 0;
+    W.ex.forEach((x) => { const e = this.lib(x.id); x.sets.forEach((s) => { if (!s.done) return; sets++; if (s.type !== "warmup" && e.type === "kg") vol += (Number(s.w) || 0) * (Number(s.r) || 0); }); });
+    return { vol, sets };
+  }
+  finish() {
+    const W = this.state.workout;
+    const t = this.totals(W);
+    const rows = W.ex.map((x) => {
+      const e = this.lib(x.id);
+      const done = x.sets.filter((s) => s.done);
+      const top = done.length ? done.reduce((a, s) => (this.better(e, s, a) ? s : a), done[0]) : null;
+      return { name: e.name, sub: done.length + " van " + x.sets.length + " sets", val: top ? this.label(e, top.w, top.r) : "—" };
+    });
+    const el = this.elapsedS();
+    const mins = Math.max(1, Math.round(el / 60));
+    this.setState({
+      summary: { title: W.title, dur: mins + " min", vol: this.kg(t.vol), strip: [{ label: "Duur", value: this.mmss(el) }, { label: "Volume", value: this.kg(t.vol) }, { label: "Sets", value: String(t.sets), accent: "var(--accent-orange-fg)" }], prs: W.prs, rows },
+      workout: null, restEnd: 0, startAt: 0, screen: "summary", sheet: null, pr: null, sessionRpe: null, sessionNote: ""
+    });
+  }
+  saveSummary() {
+    const s = this.state.summary;
+    this.setState({ recent: [{ title: s.title, sub: "wo 23 sep · " + s.dur, vol: s.vol || s.strip[1].value }].concat(this.state.recent).slice(0, 4), summary: null, screen: "home", tab: "home" });
+    this.notify("Training opgeslagen", this.state.online ? "Staat ook op je desktop" : "Wordt gesynchroniseerd zodra je bereik hebt");
+  }
+
+  coachText() {
+    if (this.state.coachKind === "food") {
+      const g = this.state.goal;
+      const lines = this.curMeals().filter((m) => m.note).map((m) => m.meal + ": " + m.note + (m.kcal ? " (" + m.kcal + " kcal, " + m.protein + " g eiwit)" : ""));
+      return "Eten woensdag 23 september 2026\nDagdoel: " + g.kcal + " kcal · " + g.protein + " g eiwit · " + g.fat + " g vet · " + g.carbs + " g koolhydraten\n\n" + lines.join("\n") + "\n\nVegetarisch.";
+    }
+    return "Samenvatting 26 aug – 23 sep 2026\nSessies: 12 (meestal ma / do / za)\nPR's: Leg Press 140 kg × 10 · Chest Press 34 kg × 9 · Lat Pulldown 52 kg × 11\nKracht (begin → nu): Leg Press 134 → 140 kg · Chest Press 33 → 34 kg · Lat Pulldown 50 → 52 kg · Pull Up (Assisted) assist 20 → 18 kg\nGewicht: 69,4 → " + this.fmt(this.state.daily[this.state.daily.length - 1]) + " kg (7-daags gem.)\nTaille: 72,5 → 71,5 cm\nGemiddeld eiwit: 118 g per dag (doel " + this.state.goal.protein + " g)\nRPE: nog niet gelogd";
+  }
+
+  renderVals() {
+    const DS = window.DesignSystem_de9512;
+    const s = this.state;
+    if (!Component.Ticker) Component.Ticker = function Ticker(p) {
+      const ref = React.useRef(p.onTick); ref.current = p.onTick;
+      React.useEffect(() => { if (!p.active) return; const t = setInterval(() => ref.current(), 1000); return () => clearInterval(t); }, [p.active]);
+      return null;
+    };
+    const ticker = React.createElement(Component.Ticker, { active: !!(s.workout || s.restEnd), onTick: () => this.tick() });
+    const el = this.elapsedS(), rs = this.restS(), resting = !!s.restEnd && rs > 0;
+    const mm = (t) => Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
+    window.__gvState = { startAt: s.startAt, restEnd: s.restEnd, done: () => this.setState({ restEnd: 0 }), run: s.run, runDone: () => this.stopRun(true) };
+    if (window.__gvEnsure) { window.__gvEnsure(); setTimeout(() => window.__gvTick && window.__gvTick(), 0); }
+    const liveElapsed = React.createElement("span", { "data-gv": "elapsed" }, mm(el));
+    const liveRest = React.createElement("span", { "data-gv": "rest" }, mm(rs));
+    const runSecs = s.run ? Math.floor((Date.now() - s.run.start) / 1000) : 0;
+    const liveRun = React.createElement("span", { "data-gv": "run" }, s.run ? mm(s.run.mode === "down" ? Math.max(0, s.run.target - runSecs) : runSecs) : "0:00");
+    const btn = (label, fn) => (DS ? React.createElement(DS.Button, { onClick: fn }, label) : null);
+    const is = {};
+    ["home", "workout", "summary", "progress", "recap", "measure", "measureEntry", "measureDetail", "food", "tplEdit", "library", "settings", "import", "exDetail"].forEach((k) => (is[k] = s.screen === k));
+    if (is.workout && !s.workout) is.workout = false;
+
+    const side = [["home", "Log"], ["workout", "Workout"], ["summary", "Samenvatting"], ["tplEdit", "Schema"], ["library", "Oefeningen"], ["progress", "Voortgang"], ["recap", "Maandoverzicht"], ["measure", "Metingen"], ["measureEntry", "Meting invullen"], ["food", "Eten"], ["settings", "Instellingen"], ["import", "Hevy-import"]];
+
+    // workout
+    let wk = { title: "", strip: [], pos: "", ex: { name: "", sets: [] }, next: [], hasNext: false };
+    if (s.workout) {
+      const W = s.workout;
+      const x = W.ex[s.exIdx];
+      const e = this.lib(x.id);
+      const as = e.type === "assist";
+      const t = this.totals(W);
+      const total = W.ex.reduce((a, q) => a + q.sets.length, 0);
+      const typeNotes = { warmup: "Warming-up · telt niet mee voor volume en PR's", dropset: "Dropset", failure: "Tot falen" };
+      wk = {
+        title: W.title,
+        strip: [{ label: "Duur", value: liveElapsed }, { label: "Volume", value: this.kg(t.vol) }, { label: "Sets", value: t.sets + "/" + total, accent: "var(--accent-orange-fg)" }],
+        pos: "Oefening " + (s.exIdx + 1) + " van " + W.ex.length,
+        ex: {
+          name: e.name, meta: e.equip + " · " + e.group, target: this.targetLine(e), note: e.note, assist: as, kgLabel: as ? "Assist" : "Kg",
+          std: e.type === "kg" || e.type === "assist", alt: !(e.type === "kg" || e.type === "assist"),
+          typeNote: { reps: "Alleen reps, zonder gewicht.", duur: (x.timer || "down") === "down" ? "Start de timer: hij telt af vanaf je doeltijd. Stop je eerder, dan telt de tijd tot dan." : "Start de timer en houd vol zo lang je kunt. Stop hem als je klaar bent.", afstand: "Afstand en tijd. Een snellere tijd op dezelfde afstand telt als record." }[e.type] || "",
+          cols: this.spec(e).map((c) => c.label),
+          sets: x.sets.map((q, i) => ({
+            index: i + 1, previous: q.pr === null ? "—" : this.label(e, q.pw, q.pr),
+            weight: this.fmt(q.w), reps: q.r === "" ? "" : String(q.r), done: q.done, typed: q.type !== "normal", type: q.type, typeNote: typeNotes[q.type] || "",
+            cells: this.spec(e).map((c) => this.cell(e, c.k, q[c.k])),
+            ...(() => {
+              const isT = e.type === "duur";
+              const running = !!(s.run && s.run.ex === s.exIdx && s.run.i === i);
+              const tv = q.r !== "" ? q.r : (x.timer || "down") === "down" ? (q.tr || q.pr) : "";
+              return { plain: !isT || q.done, idle: isT && !q.done && !running, running, timeCell: tv === "" || tv === null ? "" : this.mmss(Number(tv)), start: () => this.startRun(i), stop: () => this.stopRun(false) };
+            })(),
+            bg: q.done ? "var(--accent-mint-soft)" : "transparent",
+            checkBg: q.done ? "var(--ink)" : "transparent", checkBorder: q.done ? "var(--ink)" : "var(--border)", checkColor: q.done ? "var(--surface-primary)" : "transparent",
+            checkLabel: q.done ? "Set voltooid" : "Set afvinken",
+            toggle: () => this.toggleSet(i), edit: () => this.openSet(i)
+          }))
+        },
+        next: W.ex.map((q, i) => {
+          const done = q.sets.length > 0 && q.sets.every((z) => z.done);
+          const cur = i === s.exIdx;
+          return {
+            label: this.lib(q.id).name.replace(/ \(.*\)$/, ""),
+            fill: cur ? "var(--ink)" : done ? "var(--surface-tint)" : ["var(--accent-peach)", "var(--accent-mint)", "var(--accent-pink)", "var(--accent-blue-light)"][i % 4],
+            color: cur ? "var(--surface-primary)" : done ? "var(--ink-soft)" : ["var(--accent-orange-ink)", "var(--accent-mint-ink)", "var(--accent-pink-ink)", "#211a12"][i % 4],
+            go: () => this.setState({ exIdx: i })
+          };
+        })
+      };
+      wk.hasNext = wk.next.length > 1;
+    }
+
+    // set sheet
+    let sd = {};
+    if (s.sheet === "set" && s.draft && s.workout) {
+      const d = s.draft;
+      const x = s.workout.ex[s.exIdx];
+      const e = this.lib(x.id);
+      const q = x.sets[d.i];
+      const as = e.type === "assist";
+      const up = (patch) => this.setState({ draft: { ...s.draft, ...patch } });
+      const m = String(e.target).match(/(\d+)\D+(\d+)/);
+      const lo = m ? +m[1] : 8, hi = m ? +m[2] : 12;
+      const fields = this.spec(e).map((c) => {
+        const v = Number(d[c.k]) || 0;
+        const round = (n) => Math.max(0, Math.round(n * 10) / 10);
+        let opts;
+        if (c.k === "r" && !c.time) { opts = []; for (let r = Math.max(1, lo - 2); r <= hi + 1; r++) opts.push(r); }
+        else { const b = c.k === "w" ? (q.pw || v) : (q.pr || v); opts = [-2, -1, 0, 1, 2].map((k) => round(b + k * c.step)).filter((n) => n > 0); }
+        const show = (n) => (c.time ? this.tfmt(n) : this.fmt(n) + (c.unit ? " " + c.unit : ""));
+        return {
+          label: c.label, fs: c.time && this.spec(e).length > 1 ? "var(--title-size)" : "var(--display-md-size)", val: c.time ? this.tfmt(v) : this.fmt(v),
+          minus: () => up({ [c.k]: round(v - c.step) }), plus: () => up({ [c.k]: round(v + c.step) }),
+          opts: opts.map((n) => ({ label: show(n), on: n === v, pick: () => up({ [c.k]: n }) }))
+        };
+      });
+      sd = {
+        title: e.name, sub: "Set " + (d.i + 1) + (q.pr !== null ? " · vorige " + this.label(e, q.pw, q.pr) : ""),
+        fields,
+        stapper: (this.props.invoer ?? "stapper") === "stapper", snel: (this.props.invoer ?? "stapper") === "snelkeuze",
+        types: [["normal", "Normaal"], ["warmup", "Warming-up"], ["dropset", "Dropset"], ["failure", "Tot falen"]].map(([k, l]) => ({ label: l, on: d.type === k, pick: () => up({ type: k }) })),
+        rpe: d.rpe, setRpe: (v) => up({ rpe: v }),
+        save: () => this.saveSet(false), saveDone: () => this.saveSet(true)
+      };
+    }
+
+    // templates
+    const templates = s.templates.map((t, i) => ({
+      name: t.name, sub: (t.days.length ? t.days.join(" / ") : "Geen vaste dag") + " · " + t.items.length + " oefeningen",
+      fill: Component.FILLS[i % Component.FILLS.length],
+      edit: () => this.setState({ editTpl: t.id, screen: "tplEdit", sheet: null }), start: () => this.startTpl(t)
+    }));
+    const folders = s.folders.map((fo) => {
+      const items = templates.filter((_, i) => s.templates[i].folder === fo.id);
+      return { name: fo.name, open: fo.open, empty: !items.length, items, count: items.length + (items.length === 1 ? " schema" : " schema's"), chevron: fo.open ? "none" : "rotate(-90deg)", toggle: () => this.setState({ folders: s.folders.map((x) => (x.id === fo.id ? { ...x, open: !x.open } : x)) }) };
+    });
+    const nt = s.templates.find((t) => t.days.includes("Do")) || s.templates[0];
+    const nextTpl = { name: nt ? nt.name : "", start: () => nt && this.startTpl(nt) };
+
+    const upTpl = (fn) => this.setState({ templates: s.templates.map((t) => (t.id === s.editTpl ? fn(this.clone(t)) : t)) });
+    const T = s.templates.find((t) => t.id === s.editTpl) || s.templates[0];
+    const et = T ? {
+      name: T.name, empty: !T.items.length,
+      days: ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"].map((d) => ({ label: d, on: T.days.includes(d), toggle: () => upTpl((t) => { t.days = t.days.includes(d) ? t.days.filter((x) => x !== d) : t.days.concat(d); return t; }) })),
+      folders: s.folders.map((fo) => ({ label: fo.name, on: T.folder === fo.id, pick: () => upTpl((t) => { t.folder = fo.id; return t; }) })),
+      items: T.items.map((it, i) => {
+        const e = this.lib(it.id) || {};
+        const setAt = (j, k, v) => upTpl((t) => { t.items[i].sets[j][k] = v; return t; });
+        return {
+          name: e.name, cols: this.spec(e).map((c) => (c.time && e.type === "duur" ? ((it.timer || "down") === "down" ? "Doeltijd" : "Richttijd") : c.label) + (c.time ? " (m:ss)" : "")),
+          isTime: e.type === "duur",
+          timerChips: [["down", "Aftellen"], ["up", "Zo lang mogelijk"]].map(([k, l]) => ({ label: l, on: (it.timer || "down") === k, pick: () => upTpl((t) => { t.items[i].timer = k; return t; }) })),
+          timerNote: (it.timer || "down") === "down" ? "Telt af vanaf de doeltijd en stopt bij 0:00." : "Telt op vanaf 0:00 tot je stopt. De richttijd is alleen ter info.",
+          sub: e.group + " · " + this.targetLine(e).toLowerCase() + (e.note ? " · " + e.note : ""),
+          sets: it.sets.map((st, j) => ({
+            index: j + 1,
+            cells: this.spec(e).map((c) => ({
+              mode: c.time ? "text" : c.k === "w" ? "decimal" : "numeric", ph: c.time ? "m:ss" : "–",
+              value: typeof st[c.k] === "number" ? (c.time ? this.mmss(st[c.k]) : this.fmt(st[c.k])) : String(st[c.k] ?? ""),
+              onInput: (ev) => setAt(j, c.k, c.time ? ev.target.value.replace(/[^\d:]/g, "") : c.k === "r" ? ev.target.value.replace(/\D/g, "") : ev.target.value)
+            })),
+            remove: () => upTpl((t) => { t.items[i].sets.splice(j, 1); return t; })
+          })),
+          addSet: () => upTpl((t) => { const l = t.items[i].sets[t.items[i].sets.length - 1]; t.items[i].sets.push(l ? { ...l } : { w: "", r: "" }); return t; }),
+          remove: () => upTpl((t) => { t.items.splice(i, 1); return t; })
+        };
+      })
+    } : { days: [], items: [], folders: [] };
+
+    // library
+    const q = s.search.trim().toLowerCase();
+    const libList = s.library.filter((e) => (s.group === "Alle" || e.group === s.group) && (!q || e.name.toLowerCase().includes(q)));
+    const choose = (id) => {
+      if (s.pick === "tpl") { upTpl((t) => { const e = this.lib(id); t.items.push({ id, sets: (e && e.prev.length ? e.prev : [["", ""], ["", ""], ["", ""]]).map((p) => ({ w: p[0] === null ? "" : p[0], r: p[1] })) }); return t; }); this.setState({ screen: "tplEdit", pick: null }); }
+      else if (s.pick === "swap" && s.workout) { const W = this.clone(s.workout); W.ex[s.exIdx] = this.buildEx(id, W.ex[s.exIdx].sets.length); this.setState({ workout: W, screen: "workout", pick: null }); }
+      else this.setState({ screen: "exDetail", exId: id, exBack: "library" });
+    };
+    const ed = this.exDetail(this.lib(s.exId) || s.library[0], () => this.setState({ screen: s.exBack || "library", sheet: null }));
+    const libRows = libList.map((e) => ({ name: e.name, sub: e.equip + " · " + e.group + ({ assist: " · assist", reps: " · alleen reps", duur: " · duur", afstand: " · afstand + duur" }[e.type] || ""), pickable: !!s.pick, choose: () => choose(e.id) }));
+
+    // custom exercise
+    let cd = {};
+    if (s.sheet === "custom" && s.custom) {
+      const c = s.custom;
+      const up = (p) => this.setState({ custom: { ...s.custom, ...p } });
+      cd = {
+        name: c.name, note: c.note, invalid: !c.name.trim(),
+        onName: (ev) => up({ name: ev.target.value }), onNote: (ev) => up({ note: ev.target.value }),
+        types: [["kg", "Gewicht × reps"], ["assist", "Assisted"], ["reps", "Alleen reps"], ["duur", "Duur"], ["afstand", "Afstand + duur"]].map(([k, l]) => ({ label: l, on: c.type === k, pick: () => up({ type: k }) })),
+        groups: ["Benen", "Billen", "Borst", "Rug", "Schouders", "Core", "Cardio"].map((g) => ({ label: g, on: c.group === g, pick: () => up({ group: g }) })),
+        save: () => {
+          if (!c.name.trim()) return;
+          const id = "c" + Date.now();
+          const ex = { id, name: c.name.trim(), group: c.group, equip: "Eigen", type: c.type, note: c.note, target: { duur: "45 s", afstand: "5 km" }[c.type] || "8–12", prev: [] };
+          this.setState({ library: s.library.concat(ex), sheet: null, custom: null }, () => { if (s.pick) choose(id); else this.notify("Oefening toegevoegd", ex.name); });
+        }
+      };
+    }
+
+    // progress
+    const R = s.rng;
+    const key = R === "4w" ? "w" : "m";
+    const cut = (arr) => (R === "4w" ? arr : R === "3m" ? arr.slice(-4) : R === "1j" ? arr.slice(-13) : arr);
+    const labels = R === "4w" ? Component.WEEKS : cut(Component.MONTHS);
+    const charts = [["legpress", "Leg Press (Machine)"], ["chest", "Chest Press (Machine)"], ["pullup", "Pull Up (Assisted)"]].map(([id, name]) => {
+      const as = id === "pullup";
+      const metric = s.metrics[id] || "Zwaarste gewicht";
+      let vals = cut(Component.SERIES[id][key]);
+      if (metric === "Geschat 1RM") vals = vals.map((v) => Math.round(v * 1.33 * 2) / 2);
+      const first = vals[0], last = vals[vals.length - 1];
+      const pct = Math.round(((last - first) / first) * 100);
+      const good = as ? pct < 0 : pct > 0;
+      let bi = 0; vals.forEach((v, i) => { if (as ? v <= vals[bi] : v >= vals[bi]) bi = i; });
+      return {
+        name: name + (as ? " — Assist" : " — Kracht"), values: vals, labels,
+        open: () => this.setState({ screen: "exDetail", exId: id, exBack: "progress" }),
+        value: (as ? "assist " : "") + this.fmt(last) + " kg",
+        delta: pct === 0 ? "0%" : (pct > 0 ? "+" : "−") + Math.abs(pct) + "%" + (as ? " assist" : ""),
+        deltaColor: good ? "var(--delta-up)" : "var(--ink-soft)",
+        prIndex: bi === vals.length - 1 ? null : bi,
+        fmt: (v) => this.fmt(v) + " kg",
+        metricOptions: as ? ["Laagste assist"] : ["Zwaarste gewicht", "Geschat 1RM"],
+        metric: as ? "Laagste assist" : metric,
+        setMetric: (m) => this.setState({ metrics: { ...s.metrics, [id]: m } })
+      };
+    });
+    const vol = cut(Component.VOL[key]);
+    const st = Component.RANGE_STATS[R];
+    const pg = { prs: st[0], sessions: st[1], volume: st[2], charts, volValues: vol, volLabels: labels, volLast: this.kg(vol[vol.length - 1]), volSub: R === "4w" ? "Per week, alle oefeningen" : "Per maand, alle oefeningen" };
+
+    // measurements
+    const daily = s.daily;
+    const dailyLabels = daily.map((_, i) => (i === 0 ? "jul" : i === 10 ? "aug" : i === daily.length - 1 ? "sep" : ""));
+    const fieldRows = s.fields.map((f, i) => {
+      const diff = f.value !== null && f.start !== null ? Math.round((f.value - f.start) * 10) / 10 : null;
+      return { first: i === 0, label: f.label, value: f.value, sinceStart: diff === null || diff === 0 ? undefined : this.fmt(Math.abs(diff)) + " cm", direction: diff > 0 ? "up" : "down" };
+    });
+    const e0 = s.entry || { weight: "", vals: [] };
+    const entryRows = s.fields.map((f, i) => ({
+      label: f.label, prev: f.value === null ? "nog niet" : this.fmt(f.value), input: e0.vals[i] || "",
+      onInput: (ev) => { const v = ev.target.value; this.setState((st2) => { const en = this.clone(st2.entry); en.vals[i] = v; return { entry: en }; }); }
+    }));
+    const saveMeasure = () => {
+      const en = s.entry;
+      const num = (v) => { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; };
+      const fields = s.fields.map((f, i) => { const n = num(en.vals[i]); if (n === null) return f; const prev = histOf(f); return { ...f, value: n, start: f.start === null ? n : f.start, saved: true, hist: prev.concat({ date: "23 sep", v: n }) }; });
+      const w = num(en.weight);
+      this.setState({ fields, daily: w ? s.daily.concat(w) : s.daily, measureDue: false, lastMeasure: "23 september", screen: "measure", tab: "measure" });
+      this.notify("Meting opgeslagen", "Volgende meetmoment woensdag 7 oktober");
+    };
+    const DATES = ["15 jul", "29 jul", "12 aug", "26 aug", "9 sep"];
+    const histOf = (fl) => {
+      if (fl.value === null || fl.start === null) return [];
+      const base = fl.saved ? fl.hist : null;
+      if (base) return base;
+      return DATES.map((d, k) => ({ date: d, v: Math.round((fl.start + (fl.value - fl.start) * (k / (DATES.length - 1)) + (k % 2 ? 0.3 : -0.2) * (k > 0 && k < DATES.length - 1 ? 1 : 0)) * 2) / 2 }));
+    };
+    fieldRows.forEach((r, i) => { r.open = () => this.setState({ screen: "measureDetail", tab: "measure", detailIdx: i, sheet: null }); });
+    const df = s.fields[s.detailIdx || 0];
+    const dh = histOf(df);
+    const mdet = {
+      label: df.label, value: df.value === null ? "Nog niet gemeten" : this.fmt(df.value) + " cm",
+      delta: df.value !== null && df.start !== null && df.value !== df.start ? (df.value > df.start ? "↑" : "↓") + this.fmt(Math.abs(Math.round((df.value - df.start) * 10) / 10)) + " cm sinds start" : "",
+      values: dh.map((h) => h.v), labels: dh.map((h) => h.date), hasChart: dh.length > 1, noChart: dh.length < 2,
+      history: dh.slice().reverse().map((h) => ({ date: h.date, val: this.fmt(h.v) + " cm" }))
+    };
+    const t0 = s.fields.find((f) => f.label === "Taille"), h0 = s.fields.find((f) => f.label === "Heupen");
+    const circSummary = "Taille " + (t0.value < t0.start ? "↓" : "↑") + this.fmt(Math.abs(t0.value - t0.start)) + " cm · Heupen " + (h0.value < h0.start ? "↓" : "↑") + this.fmt(Math.abs(h0.value - h0.start)) + " cm sinds start";
+    const wNow = daily[daily.length - 1];
+
+    // food
+    const curMeals = this.curMeals();
+    const used = curMeals.reduce((a, m) => ({ kcal: a.kcal + (m.kcal || 0), protein: a.protein + (m.protein || 0), fat: a.fat + (m.fat || 0), carbs: a.carbs + (m.carbs || 0) }), { kcal: 0, protein: 0, fat: 0, carbs: 0 });
+    const g = s.goal;
+    const left = { kcal: g.kcal - used.kcal, protein: g.protein - used.protein, fat: g.fat - used.fat, carbs: g.carbs - used.carbs };
+    const mealRows = curMeals.map((m, i) => ({ ...m, recipe: m.recipe || undefined, edit: () => this.setState({ sheet: "meal", draft: { i, ...this.clone(m) } }) }));
+    let md = {};
+    if (s.sheet === "meal" && s.draft) {
+      const d = s.draft;
+      const up = (p) => this.setState({ draft: { ...s.draft, ...p } });
+      const numOr = (v) => (v === "" ? null : Number(v));
+      md = {
+        meal: d.meal, note: d.note, recipe: d.recipe,
+        onNote: (ev) => up({ note: ev.target.value }), onRecipe: (ev) => up({ recipe: ev.target.value }),
+        fields: [["kcal", "Kcal"], ["protein", "Eiwit"], ["fat", "Vet"], ["carbs", "KH"]].map(([k, l]) => ({ label: l, value: d[k] === null ? "" : String(d[k]), onInput: (ev) => up({ [k]: numOr(ev.target.value.replace(/\D/g, "")) }) })),
+        estimateNote: d.note ? "Fase 2 · stuurt je notitie naar Claude, jij controleert" : "Fase 2 · schrijf eerst wat je at",
+        estimate: () => { if (!d.note) return; up({ kcal: 540, protein: 31, fat: 18, carbs: 58 }); },
+        save: () => { const meals = curMeals.slice(); const { i, ...rest } = d; meals[i] = rest; this.setMeals(meals); }
+      };
+    }
+    const goalRows = [["kcal", "Kcal", "kcal"], ["protein", "Eiwit", "g"], ["fat", "Vet", "g"], ["carbs", "Koolhydraten", "g"]].map(([k, l, u]) => ({ label: l, unit: u, value: String(g[k]), onInput: (ev) => this.setState({ goal: { ...s.goal, [k]: Number(ev.target.value.replace(/\D/g, "")) || 0 } }) }));
+
+    // import
+    const MERGES = [["Squad", "Squat (Smith Machine)", 14, true], ["Smit Machine Squat", "Squat (Smith Machine)", 9, true], ["rdl cable", "Romanian Deadlift (Cable)", 21, true], ["Leg press", "Leg Press (Machine)", 6, true], ["Hip thrust machine", "Hip Thrust (Machine)", 8, true], ["Lat Pulldown (Machine)", "Lat Pulldown (Cable)", 12, false], ["Seated Cable Row - Bar Grip", "Seated Cable Row – V Grip", 10, false]];
+    const TITLES = [["Afternoon workout", 18], ["Full body 1", 14], ["Fullbody 2", 11], ["Morning workout", 9], ["Upperbody A", 6], ["Lower 1", 5]];
+    const LINKS = ["Niet koppelen", "Full Body A", "Full Body B", "Full Body C"];
+    const im = s.imp;
+    const merges = im.merges || MERGES.map((m) => m[3]);
+    const upImp = (p) => this.setState({ imp: { ...s.imp, ...p } });
+    const imp = {
+      s1: im.step === 1, s2: im.step === 2, s3: im.step === 3, s4: im.step === 4,
+      stepLabel: "Stap " + im.step + " van 4 · " + ["Bestand", "Oefeningen", "Titels", "Klaar"][im.step - 1],
+      dots: [1, 2, 3, 4].map((n) => ({ bg: n <= im.step ? "var(--ink)" : "var(--border)" })),
+      canBack: im.step > 1 && im.step < 4,
+      nextLabel: ["Volgende", "Volgende", "Importeren", "Naar voortgang"][im.step - 1],
+      merges: MERGES.map((m, i) => ({ from: m[0], sub: m[2] + " sets · " + (merges[i] ? "→ " + m[1] : "blijft apart"), on: merges[i], label: merges[i] ? "Samenvoegen" : "Apart houden", toggle: () => { const a = merges.slice(); a[i] = !a[i]; upImp({ merges: a }); } })),
+      titles: TITLES.map(([t, n]) => { const l = im.links[t] || 0; return { t, sub: n + " workouts", link: LINKS[l], on: l > 0, cycle: () => upImp({ links: { ...im.links, [t]: (l + 1) % LINKS.length } }) }; })
+    };
+
+    const coach = { title: s.coachKind === "food" ? "Eten voor je coach" : "Samenvatting voor je coach", text: this.coachText(), btn: s.copied ? "Gekopieerd" : "Kopiëren" };
+
+    const showNav = ["home", "workout", "progress", "measure", "food"].includes(s.screen);
+    const setTab = (id) => this.go(id === "home" ? "home" : id);
+
+    return {
+      ticker, liveRun, theme: s.theme, isDark: s.theme === "dark", isLight: s.theme !== "dark", pageBg: s.theme === "dark" ? "#0d0a08" : "#e9e3da",
+      isOffline: !s.online, syncMode: s.online ? "synced" : "offline",
+      toggleTheme: () => this.setState({ theme: s.theme === "dark" ? "light" : "dark" }),
+      setLight: () => this.setState({ theme: "light" }), setDark: () => this.setState({ theme: "dark" }),
+      toggleOnline: () => this.setState({ online: !s.online }),
+      sendPush: () => this.setState({ push: true }), push: s.push, openPush: () => this.go("recap"),
+      sideScreens: side.map(([id, label]) => ({ label, on: s.screen === id, go: () => this.go(id) })),
+      is, tab: s.tab, onNav: setTab, showNav,
+      goHome: () => this.go("home"), goMeasure: () => this.go("measure"),
+      openSettings: () => this.go("settings"), openImport: () => this.go("import"),
+      openMeasureEntry: () => this.go("measureEntry"), openRecap: () => this.go("recap"), closeRecap: () => this.go("progress"),
+      openCoachTraining: () => this.setState({ sheet: "coach", coachKind: "training", copied: false }),
+      openCoachFood: () => this.setState({ sheet: "coach", coachKind: "food", copied: false }),
+      copyCoach: () => { try { navigator.clipboard.writeText(this.coachText()); } catch (e) {} this.setState({ copied: true }); },
+      coach,
+      templates, folders, nextTpl,
+      newFolder: () => this.setState({ sheet: "folder", folderName: "" }),
+      folderName: s.folderName, onFolderName: (ev) => this.setState({ folderName: ev.target.value }),
+      saveFolder: () => { const n = s.folderName.trim() || "Nieuw mapje"; this.setState({ folders: s.folders.concat({ id: "f" + Date.now(), name: n, open: true }), sheet: null }); }, measureDue: s.measureDue,
+      recent: s.recent.map((r, i) => ({ ...r, first: i === 0 })),
+      newTemplate: () => { const id = "t" + Date.now(); this.setState({ templates: s.templates.concat({ id, name: "Nieuw schema", folder: s.folders[0].id, days: [], items: [] }), editTpl: id, screen: "tplEdit" }); },
+      et, onTplName: (ev) => { const v = ev.target.value; upTpl((t) => { t.name = v; return t; }); },
+      saveTplBtn: btn("Opslaan", () => { this.go("home"); this.notify("Schema opgeslagen", T ? T.name : ""); }),
+      pickForTpl: () => this.setState({ screen: "library", pick: "tpl", search: "", group: "Alle" }),
+      libTitle: s.pick ? "Oefening kiezen" : "Oefeningen",
+      closeLibrary: () => this.setState({ screen: s.pick === "tpl" ? "tplEdit" : s.pick === "swap" ? "workout" : "home", pick: null }),
+      search: s.search, onSearch: (ev) => this.setState({ search: ev.target.value }),
+      groupChips: ["Alle", "Benen", "Billen", "Borst", "Rug", "Schouders", "Core", "Cardio"].map((x) => ({ label: x, on: s.group === x, pick: () => this.setState({ group: x }) })),
+      libRows, libEmpty: !libRows.length,
+      openCustom: () => this.setState({ sheet: "custom", custom: { name: s.search, type: "kg", group: s.group === "Alle" ? "Benen" : s.group, note: "" } }),
+      cd,
+      wk, sd, elapsedTime: liveElapsed,
+      minimize: () => this.setState({ screen: "home", tab: "home" }), resume: () => this.setState({ screen: "workout", tab: "home" }),
+      showMini: !!s.workout && s.screen !== "workout",
+      finishBtn: btn("Voltooien", () => this.finish()),
+      restProgress: null,
+      showRest: !!s.restEnd && s.screen === "workout", restTime: liveRest,
+      restMinus: () => this.setState({ restEnd: Math.max(Date.now() + 1000, s.restEnd - 15000) }), restPlus: () => this.setState({ restEnd: s.restEnd + 15000 }), restSkip: () => this.setState({ restEnd: 0 }),
+      addSet: () => { const W = this.clone(s.workout); const x = W.ex[s.exIdx]; const l = x.sets[x.sets.length - 1]; x.sets.push({ pw: null, pr: null, w: l ? l.w : "", r: "", tr: l ? l.tr : "", done: false, type: "normal", rpe: null }); this.setState({ workout: W }); },
+      openExMenu: () => this.setState({ sheet: "exMenu" }),
+      ed,
+      openExInfo: (ev) => { if (ev.target.closest("button") || !s.workout) return; this.setState({ sheet: null, screen: "exDetail", exId: s.workout.ex[s.exIdx].id, exBack: "workout" }); },
+      exMenuItems: [
+        { icon: "trend", label: "Spieren en geschiedenis", go: () => this.setState({ sheet: null, screen: "exDetail", exId: s.workout ? s.workout.ex[s.exIdx].id : null, exBack: "workout" }) },
+        { icon: "repeat", label: "Oefening wisselen", go: () => this.setState({ sheet: null, screen: "library", pick: "swap", search: "", group: "Alle" }) },
+        { icon: "kebab", label: "Vaste notitie bewerken", go: () => { const x = s.workout && this.lib(s.workout.ex[s.exIdx].id); this.setState({ sheet: "note", draftNote: x ? x.note : "" }); } },
+        { icon: "skip", label: "Overslaan, naar de volgende", go: () => this.setState({ sheet: null, exIdx: s.workout ? (s.exIdx + 1) % s.workout.ex.length : 0 }) }
+      ],
+      draftNote: s.draftNote, onDraftNote: (ev) => this.setState({ draftNote: ev.target.value }),
+      saveNote: () => { const id = s.workout.ex[s.exIdx].id; this.setState({ library: s.library.map((e) => (e.id === id ? { ...e, note: s.draftNote } : e)), sheet: null }); },
+      pr: s.pr, dismissPr: () => this.setState({ pr: null }), notice: s.notice, dismissNotice: () => this.setState({ notice: null }),
+      sum: s.summary ? { ...s.summary, hasPrs: s.summary.prs.length > 0, prs: s.summary.prs.map((p, i) => ({ ...p, first: i === 0 })), rows: s.summary.rows.map((r, i) => ({ ...r, first: i === 0 })) } : { strip: [], prs: [], rows: [] },
+      saveBtn: btn("Opslaan", () => this.saveSummary()),
+      sessionRpe: s.sessionRpe, setSessionRpe: (v) => this.setState({ sessionRpe: v }),
+      sessionNote: s.sessionNote, onSessionNote: (ev) => this.setState({ sessionNote: ev.target.value }),
+      rng: s.rng, setRng: (r) => this.setState({ rng: r }), pg, fmtKg: (v) => this.kg(v),
+      daily, dailyLabels, weightNow: this.fmt(wNow), weightDelta: "↓" + this.fmt(daily[0] - wNow) + " kg sinds start", circSummary,
+      fieldRows, lastMeasure: s.lastMeasure, mdet, fmtCm: (v) => this.fmt(v) + " cm",
+      measureTitle: s.measureDue ? "Meetmoment vandaag" : "Volgende meetmoment",
+      measureSub: s.measureDue ? "Laatste meting 9 september" : "Woensdag 7 oktober",
+      day: [{ rel: "Gisteren", date: "dinsdag 22 september" }, { rel: "Vandaag", date: "woensdag 23 september" }, { rel: "Morgen", date: "donderdag 24 september" }][s.dayOff + 1],
+      dayPrev: () => this.setState({ dayOff: Math.max(-1, s.dayOff - 1) }), dayNext: () => this.setState({ dayOff: Math.min(1, s.dayOff + 1) }),
+      measureLine: s.measureDue ? "Meetmoment vandaag · laatste meting 9 september" : "Volgende meetmoment: woensdag 7 oktober",
+      entryWeight: e0.weight, onEntryWeight: (ev) => { const v = ev.target.value; this.setState((st2) => ({ entry: { ...st2.entry, weight: v } })); },
+      entryRows, saveMeasureBtn: btn("Opslaan", saveMeasure),
+      recapStats: [
+        { label: "Sessies", value: "12", delta: "2 vs aug", dir: "up", color: "var(--ink)" },
+        { label: "PR's", value: "3", delta: "1 vs aug", dir: "up", color: "var(--accent-orange-fg)" },
+        { label: "Volume", value: "62.400 kg", delta: "4% vs aug", dir: "down", color: "var(--ink)" }
+      ],
+      recapTrained: [3, 5, 7, 10, 12, 14, 17, 19, 21],
+      radar: {
+        axes: ["Benen", "Borst", "Rug", "Schouders", "Core"], series: [24, 14, 16, 9, 3], compare: [20, 15, 16, 8, 5],
+        legend: [{ label: "september", color: "var(--accent-orange-fg)" }, { label: "augustus", color: "var(--accent-compare)" }],
+        bars: [{ label: "Bovenbenen", count: 24 }, { label: "Rug", count: 16 }, { label: "Borst", count: 14 }, { label: "Schouders", count: 9 }, { label: "Core", count: 3 }]
+      },
+      tagGewicht: ["Gewicht"], tagAssist: ["Assist"],
+      left, mealRows, md, goalLine: "Dagdoel " + g.kcal + " kcal · " + g.protein + " g eiwit · " + g.fat + " g vet · " + g.carbs + " g koolhydraten",
+      goalRows,
+      scheduleChips: ["1 week", "2 weken", "4 weken"].map((x) => ({ label: x, on: s.schedule === x, pick: () => this.setState({ schedule: x }) })),
+      reminder: s.reminder, reminderLabel: s.reminder ? "Aan" : "Uit", toggleReminder: () => this.setState({ reminder: !s.reminder }),
+      importSheet: () => this.notify("Google Sheet gekoppeld", "Metingen uit \"Gym dashboard\" worden eenmalig ingelezen"),
+      exportCsv: () => this.notify("Export klaar", "gymveer-export.csv · alle data sinds 17 jun 2025"),
+      exportJson: () => this.notify("Export klaar", "gymveer-export.json · alle data sinds 17 jun 2025"),
+      imp,
+      impStrip: [{ label: "Workouts", value: "127" }, { label: "Sets", value: "2.348" }, { label: "Namen", value: "73" }],
+      impChecks: ["Eenheden: kg en km, gelezen uit de kolomnamen", "Workouts gegroepeerd op starttijd en titel", "46 sets zonder gewicht: lichaamsgewicht", "Plank en wall sit als duur, hardlopen als afstand + duur", "RPE is overal leeg en wordt overgeslagen", "Pull Up (Assisted): gewicht is assist, lager is beter"],
+      impBack: () => upImp({ step: Math.max(1, im.step - 1) }),
+      impNext: () => (im.step < 4 ? upImp({ step: im.step + 1 }) : this.setState({ screen: "progress", tab: "progress", rng: "Alles" })),
+      sheetOpen: !!s.sheet, closeSheet: () => this.setState({ sheet: null }),
+      sh: { set: s.sheet === "set", exMenu: s.sheet === "exMenu", note: s.sheet === "note", meal: s.sheet === "meal", coach: s.sheet === "coach", custom: s.sheet === "custom", folder: s.sheet === "folder", abort: s.sheet === "abort" },
+      askAbort: () => this.setState({ sheet: "abort" }),
+      abortWorkout: () => this.setState({ workout: null, run: null, restEnd: 0, startAt: 0, sheet: null, screen: "home", tab: "home" })
+    };
+  }
+}
+</script>
+</body>
+</html>

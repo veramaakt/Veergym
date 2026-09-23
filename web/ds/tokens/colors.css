@@ -1,0 +1,80 @@
+/* Color tokens — uit het Claude Design-systeem "Gymveer" (design-tokens v4).
+   Light is de standaard :root; [data-theme="dark"] draagt de donkere waarden. */
+:root{
+  --surface-primary:#ffffff;
+  --surface-tint:#f6f1e9;
+  --ink:#211a12;
+  --ink-soft:#75664f;
+  --border:#efe8dd;
+  --accent-lavender:#C7B0FF;
+  --accent-peach:#FFE8D2;
+  --accent-orange:#FF7144;
+  --accent-orange-soft:#FFEBE2;
+  --accent-blue-light:#D8E6FF;
+  --accent-blue:#334ED8;
+  --accent-mint:#C0F0AA;
+  --accent-mint-ink:#24401a;
+  --accent-mint-soft:#EBF9E1;
+  --accent-pink:#FFA9FF;
+  --accent-pink-ink:#5c1a5c;
+  --accent-orange-ink:#4a1505;
+  --accent-orange-fg:#B23A0A;
+  --accent-citrus:#E0E446;
+  --accent-citrus-ink:#3d3f08;
+  --accent-deep-green:#33473B;
+  --accent-compare:#b9ada0;
+
+  --text-primary:var(--ink);
+  --text-secondary:var(--ink-soft);
+  --text-on-mint:var(--accent-mint-ink);
+  --text-on-pink:var(--accent-pink-ink);
+  --text-on-orange:var(--accent-orange-ink);
+  --surface-field:var(--surface-tint);
+  --surface-nav:var(--surface-tint);
+  --badge-fill-default:var(--accent-peach);
+  --accent-strength:var(--accent-orange);
+  --accent-volume:var(--accent-blue);
+  --accent-nutrition:var(--accent-mint);
+  --accent-nutrition-hero:var(--accent-deep-green);
+  --accent-measure:var(--accent-pink);
+  --accent-rest:var(--accent-lavender);
+  --wash-success:var(--accent-mint-soft);
+  --wash-trained-day:var(--accent-orange-soft);
+  --text-on-trained-day:var(--accent-orange-fg);
+  --text-on-citrus:var(--accent-citrus-ink);
+  --text-on-deep-green:#eef3ef;
+  --delta-up:#2f7a3a;
+  --delta-down:var(--ink-soft);
+
+  --glass-fill:rgba(255,255,255,.55);
+  --glass-fill-dark:rgba(18,14,10,.55);
+  --glass-border:rgba(255,255,255,.7);
+  --glass-border-dark:rgba(255,255,255,.18);
+  --glass-blur:blur(18px) saturate(1.3);
+}
+[data-theme="dark"]{
+  --surface-primary:#17130f;
+  --surface-tint:#221c15;
+  --ink:#f4ece1;
+  --ink-soft:#9a8c7b;
+  --border:#2c261e;
+  --accent-lavender:#C7B0FF;
+  --accent-peach:#3a2f22;
+  --accent-orange:#ff7d4d;
+  --accent-orange-fg:#ff7d4d;
+  --accent-orange-soft:#3a2419;
+  --accent-blue-light:#D8E6FF;
+  --accent-blue:#6f88ff;
+  --accent-mint:#C0F0AA;
+  --accent-mint-ink:#24401a;
+  --accent-mint-soft:#253522;
+  --accent-pink:#e88ce8;
+  --accent-pink-ink:#3a1a3a;
+  --accent-citrus:#E0E446;
+  --accent-citrus-ink:#3d3f08;
+  --accent-deep-green:#2b3d33;
+  --accent-compare:#55493c;
+  --delta-up:#8fd59a;
+  --text-on-deep-green:#eef3ef;
+  --glass-border:rgba(255,255,255,.3);
+}

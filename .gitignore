@@ -1,0 +1,22 @@
+# Geheimen: nooit naar GitHub
+.env
+*.env
+!.env.example
+secrets/
+*.pem
+*.key
+
+# Jouw data (database, automatisch gemaakte sleutel)
+data/
+*.db
+*.sqlite
+
+# Lokale instellingen
+deploy.local.json
+.claude/
+
+# Python / systeem
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store

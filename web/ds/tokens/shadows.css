@@ -1,0 +1,5 @@
+:root{
+  --shadow-float:0 14px 30px rgba(0,0,0,.12);
+  --shadow-float-accent:0 14px 30px rgba(255,113,68,.35);
+  --shadow-popover:0 8px 18px rgba(0,0,0,.18);
+}
