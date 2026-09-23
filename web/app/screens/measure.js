@@ -194,6 +194,17 @@ export function MeasureEntry({ ctx, params }) {
         <div class="sub">${prevOf(f.key) !== null ? num(prevOf(f.key)) : ""}</div>
         <input inputMode="decimal" placeholder="–" value=${vals[f.key] ?? ""} onInput=${(e) => setVals({ ...vals, [f.key]: e.target.value })} style=${inputStyle} />
       </div>`)}
+      <div class="row" style=${{ gap: 10, marginTop: 18 }}>
+        <div class="flex1"><div class="label" style=${{ margin: 0 }}>Foto's</div></div>
+        <span class="tag">Binnenkort</span>
+      </div>
+      <div style=${{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 8 }}>
+        ${["Voor", "Zij", "Achter"].map((side) => html`<div key=${side} aria-disabled="true"
+          style=${{ aspectRatio: "3 / 4", borderRadius: "var(--radius-md)", border: "1px dashed var(--border)", background: "var(--surface-tint)", display: "grid", placeItems: "center", color: "var(--ink-soft)", opacity: 0.7 }}>
+          <div style=${{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>${Icon("plus", 18)}<span class="caption">${side}</span></div>
+        </div>`)}
+      </div>
+      <div class="sub" style=${{ marginTop: 6 }}>Straks maak je hier per meting drie foto's, met je vorige foto als hulplijn over de camera.</div>
       <textarea class="field" style=${{ marginTop: 12, minHeight: 64 }} value=${note} onInput=${(e) => setNote(e.target.value)} placeholder="Opmerking (optioneel)"></textarea>
       <div class="sub" style=${{ marginTop: 12 }}>Lege velden sla je over. Welke omtrekken je bijhoudt, pas je aan in Instellingen.</div>
       ${existing && html`<div style=${{ display: "flex", justifyContent: "center", marginTop: 12 }}><${DS.Button} variant="quiet" onClick=${del}>Meting verwijderen<//></div>`}
