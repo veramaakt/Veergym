@@ -1,8 +1,10 @@
-import { html, DS, FILLS, useEffect, Icon } from "../ui.js";
+import { html, DS, FILLS, useEffect, useState, Icon } from "../ui.js";
 import * as store from "../store.js";
 import { TYPES, WEEKDAYS, num, time, exMeta, hasValue } from "../logic.js";
 
 const REST_OPTIONS = [null, 0, 30, 60, 90, 120, 180, 240];
+// Iconen uit het design system die passen bij een schema.
+const SCHEMA_ICONS = ["dumbbell", "trend", "bars", "radar", "repeat", "clock", "calendar", "home", "scale"];
 const restLabel = (v) => (v === null ? "Standaard" : v === 0 ? "Geen" : time(v));
 
 function parse(field, text) {
@@ -31,6 +33,7 @@ function DeleteSheet({ ctx, id }) {
 
 export function TemplateEditor({ ctx, params }) {
   const t = store.get(params.id);
+  const [look, setLook] = useState(false);
   useEffect(() => { if (!t) ctx.tab("home"); }, [t]);
   if (!t) return null;
 
@@ -60,11 +63,21 @@ export function TemplateEditor({ ctx, params }) {
           <${DS.Chip} selected=${!t.folder} onClick=${() => set({ folder: null })}>Geen<//>
           ${ctx.folders.map((f) => html`<${DS.Chip} key=${f.id} selected=${t.folder === f.id} onClick=${() => set({ folder: f.id })}>${f.name}<//>`)}
         </div>
-        <div class="label">Kleur</div>
-        <div class="chips">${FILLS.map((c) => html`<button type="button" key=${c} aria-label="Kleur" onClick=${() => set({ color: c })}
-          style=${{ width: 44, height: 44, border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "grid", placeItems: "center" }}>
-          <span style=${{ width: 30, height: 30, borderRadius: 11, background: c, outline: (t.color || FILLS[0]) === c ? "2px solid var(--ink)" : "none", outlineOffset: 2 }}></span>
-        </button>`)}</div>
+        <div class="label">Icoon en kleur</div>
+        <button type="button" class="plainbtn" onClick=${() => setLook(!look)} style=${{ minHeight: 48, display: "flex", alignItems: "center", gap: 12 }}>
+          <${DS.IconBadge} icon=${t.icon || "dumbbell"} size=${40} fill=${t.color || FILLS[0]} color="#211a12" />
+          <span class="sub" style=${{ fontWeight: 700 }}>${look ? "Klaar met kiezen" : "Tik om te wijzigen"}</span>
+        </button>
+        ${look && html`<div>
+          <div class="chips" style=${{ marginTop: 10 }}>${SCHEMA_ICONS.map((ic) => html`<button type="button" key=${ic} aria-label=${"Icoon " + ic} onClick=${() => set({ icon: ic })}
+            style=${{ width: 44, height: 44, border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "grid", placeItems: "center" }}>
+            <span style=${{ width: 36, height: 36, borderRadius: 12, display: "grid", placeItems: "center", background: (t.icon || "dumbbell") === ic ? "var(--ink)" : "var(--surface-tint)", color: (t.icon || "dumbbell") === ic ? "var(--surface-primary)" : "var(--ink)" }}>${Icon(ic, 19)}</span>
+          </button>`)}</div>
+          <div class="chips" style=${{ marginTop: 6 }}>${FILLS.map((c) => html`<button type="button" key=${c} aria-label="Kleur" onClick=${() => set({ color: c })}
+            style=${{ width: 44, height: 44, border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "grid", placeItems: "center" }}>
+            <span style=${{ width: 30, height: 30, borderRadius: 11, background: c, outline: (t.color || FILLS[0]) === c ? "2px solid var(--ink)" : "none", outlineOffset: 2 }}></span>
+          </button>`)}</div>
+        </div>`}
       </div>
 
       <div class="section">

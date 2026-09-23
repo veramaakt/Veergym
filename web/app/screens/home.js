@@ -176,7 +176,7 @@ export function Home({ ctx }) {
           ${open && html`<div>
             ${g.items.map((t, i) => html`<div key=${t.id} class="row" style=${{ padding: "6px 0" }}>
               <button type="button" class="plainbtn flex1" style=${{ minHeight: 48, display: "flex", alignItems: "center", gap: 12 }} onClick=${() => ctx.go("template", { id: t.id })}>
-                <${DS.IconBadge} icon="dumbbell" size=${34} fill=${t.color || FILLS[i % FILLS.length]} color="#211a12" />
+                <${DS.IconBadge} icon=${t.icon || "dumbbell"} size=${34} fill=${t.color || FILLS[i % FILLS.length]} color="#211a12" />
                 <span style=${{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                   <span class="body">${t.name || "Naamloos schema"}</span>
                   <span class="sub">${[(t.days || []).filter((d) => WEEKDAYS.includes(d)).join(" · "), `${(t.items || []).length} oefeningen`].filter(Boolean).join(" · ")}</span>
