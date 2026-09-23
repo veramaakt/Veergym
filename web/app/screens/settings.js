@@ -60,7 +60,7 @@ export function Settings({ ctx }) {
           <${DS.Chip} onClick=${() => exportIt("api/export.csv", "veergym-workouts.csv")}>CSV<//>
           <${DS.Chip} onClick=${() => exportIt("api/export.json", "veergym.json")}>JSON<//>
         <//>
-        <${Row} title="Hevy-historie" sub="CSV uit Hevy importeren · volgende bouwstap"><span class="tag">Later</span><//>
+        <${Row} title="Hevy-historie" sub="CSV uit Hevy importeren"><${DS.Chip} onClick=${() => ctx.go("import")}>Importeren<//><//>
         <${Row} title="Google Sheet" sub="Metingen uit Gym dashboard · volgende bouwstap"><span class="tag">Later</span><//>
       </div>
 

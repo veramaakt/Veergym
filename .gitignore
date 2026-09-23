@@ -20,3 +20,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
+
+# Persoonlijke bestanden om mee te testen (bijv. Hevy-export): nooit naar GitHub
+prive/

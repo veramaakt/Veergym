@@ -15,6 +15,11 @@ Persoonlijke fitness-app (zie `Aangeleverd/vision-brief-fitness-app.md`), design
   Nieuw bestand in `web/`? Voeg het toe aan `SHELL` in `web/sw.js` en verhoog `VERSION`.
 - Workout-records bevatten hun sets: `{title, template, start, end, rpe, note, items:[{exercise, sets:[{type,w,r,dur,dist,rpe}]}]}`.
 - Oefeningtypes: kg, assist (lager is beter), reps, duur, afstand.
+- Voortgang/Maandoverzicht rekenen in de browser (`web/app/stats.js`); Hevy-import draait op de server
+  (`veergym/hevy.py`, endpoints `/api/import/hevy/preview` en `/api/import/hevy`). Geïmporteerde workouts
+  hebben een vast id (`hevy-<hash van starttijd+titel>`), dus herhaald importeren maakt geen dubbelen.
+- `prive/` (gitignored) bevat Vera's persoonlijke testbestanden, zoals haar Hevy-export. Mag gelezen worden
+  om te testen, maar komt nooit in git, in tests of in `web/`.
 - In htm: gebruik `autoFocus`/`inputMode` (React-casing) en `<${Fragment}>` i.p.v. `<>`.
 
 ## Commando's

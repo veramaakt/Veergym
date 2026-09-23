@@ -9,11 +9,12 @@ from pydantic import BaseModel
 from sqlmodel import Session
 
 from . import __version__
+from . import hevy
 from .auth import check_password, make_token, require_auth
 from .config import WEB_DIR, get_settings
-from .db import get_session
+from .db import Record, get_session, next_seq, select
 from .export import export_csv, export_json
-from .sync import SyncRequest, SyncResponse, apply_sync
+from .sync import SyncRequest, SyncResponse, apply_sync, seed_if_empty
 
 app = FastAPI(title="Veergym", version=__version__)
 
@@ -63,6 +64,54 @@ def export_as_csv(session: Session = Depends(get_session)):
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="veergym-workouts.csv"'},
     )
+
+
+class HevyPreviewRequest(BaseModel):
+    csv: str
+
+
+class HevyImportRequest(BaseModel):
+    csv: str
+    choices: dict[str, str] = {}
+    titles: dict[str, dict] = {}
+
+
+def _exercises(session: Session) -> list[dict]:
+    rows = session.exec(select(Record).where(Record.kind == "exercise", Record.deleted == False)).all()  # noqa: E712
+    return [{"id": r.id, **r.data} for r in rows]
+
+
+def _workout_ids(session: Session) -> set[str]:
+    # Ook verwijderde workouts tellen mee: wat je weggooide, komt niet terug bij een nieuwe import.
+    return set(session.exec(select(Record.id).where(Record.kind == "workout")).all())
+
+
+@app.post("/api/import/hevy/preview", dependencies=[Depends(require_auth)])
+def hevy_preview(req: HevyPreviewRequest, session: Session = Depends(get_session)):
+    seed_if_empty(session)
+    try:
+        return hevy.preview(req.csv, _exercises(session), get_settings().timezone, _workout_ids(session))
+    except hevy.HevyError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.post("/api/import/hevy", dependencies=[Depends(require_auth)])
+def hevy_import(req: HevyImportRequest, session: Session = Depends(get_session)):
+    seed_if_empty(session)
+    exercises = _exercises(session)
+    try:
+        records, report = hevy.build_records(req.csv, req.choices, exercises, _workout_ids(session),
+                                             int(time.time() * 1000), get_settings().timezone, req.titles)
+    except hevy.HevyError as e:
+        raise HTTPException(400, str(e))
+    for rec in records:
+        row = session.get(Record, rec["id"]) or Record(id=rec["id"], kind=rec["kind"])
+        row.kind, row.data, row.updated_at, row.deleted = rec["kind"], rec["data"], rec["updated_at"], False
+        row.seq = next_seq(session)
+        session.add(row)
+    session.commit()
+    ex_map = {e["id"]: e for e in exercises} | {r["id"]: r["data"] for r in records if r["kind"] == "exercise"}
+    return {**report, "checks": hevy.progress_checks(records, ex_map, top=5)}
 
 
 @app.get("/sw.js", include_in_schema=False)

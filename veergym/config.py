@@ -29,6 +29,8 @@ class Settings:
         )
         self.secret_key: str = os.getenv("SECRET_KEY") or self._stored_secret()
         self.token_days: int = int(os.getenv("TOKEN_DAYS", "180"))
+        # Tijdzone voor het inlezen van tijden zonder zone (zoals in de Hevy-export).
+        self.timezone: str = os.getenv("TIMEZONE", "Europe/Amsterdam")
 
     def _stored_secret(self) -> str:
         """Geen SECRET_KEY in .env? Maak er eenmalig een aan in de datamap."""

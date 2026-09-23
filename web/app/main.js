@@ -12,6 +12,9 @@ import { Library } from "./screens/library.js";
 import { ExerciseDetail } from "./screens/exercise.js";
 import { Settings } from "./screens/settings.js";
 import { Later } from "./screens/later.js";
+import { Progress } from "./screens/progress.js";
+import { Recap } from "./screens/recap.js";
+import { HevyImport } from "./screens/import.js";
 
 const TAB_SCREENS = new Set(["home", "progress", "measure", "food"]);
 
@@ -69,7 +72,9 @@ function App() {
 
   const S = {
     home: Home,
-    progress: Later,
+    progress: Progress,
+    recap: Recap,
+    import: HevyImport,
     measure: Later,
     food: Later,
     workout: Workout,

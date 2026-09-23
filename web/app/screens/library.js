@@ -64,7 +64,7 @@ export function Library({ ctx, params }) {
   const [group, setGroup] = useState("Alle");
   const needle = q.trim().toLowerCase();
   const rows = ctx.exercises
-    .filter((e) => (group === "Alle" ? true : group === "Eigen" ? e.custom : e.group === group))
+    .filter((e) => (group === "Alle" ? true : group === "Eigen" ? e.custom : group === "Overig" ? !GROUPS.includes(e.group) : e.group === group))
     .filter((e) => !needle || e.name.toLowerCase().includes(needle) || (e.group || "").toLowerCase().includes(needle))
     .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -79,7 +79,7 @@ export function Library({ ctx, params }) {
           style=${{ flex: 1, minWidth: 0, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: "var(--body-md-size)", fontWeight: 700, outline: "none" }} />
       </div>
       <div class="chips scrollx" style=${{ margin: "10px -16px 0 0", paddingBottom: 6 }}>
-        ${["Alle", ...GROUPS, "Eigen"].map((g) => html`<div key=${g} style=${{ flex: "none" }}><${DS.Chip} selected=${group === g} onClick=${() => setGroup(g)}>${g}<//></div>`)}
+        ${["Alle", ...GROUPS, "Eigen", ...(ctx.exercises.some((e) => !GROUPS.includes(e.group)) ? ["Overig"] : [])].map((g) => html`<div key=${g} style=${{ flex: "none" }}><${DS.Chip} selected=${group === g} onClick=${() => setGroup(g)}>${g}<//></div>`)}
       </div>
     </div>
     <div class="scroll" style=${{ paddingTop: 4 }}>

@@ -59,3 +59,6 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
   body { background: var(--surface-tint); }
   .app { box-shadow: 0 0 0 1px var(--border); }
 }
+
+/* Radardiagram: labels mogen buiten het vlak vallen, anders worden ze afgeknipt. */
+.radar svg { overflow: visible; }
