@@ -51,7 +51,12 @@ def demo_records(now_ms: int) -> list[dict]:
     for r in records:
         if r["data"]["name"] in NOTES:
             r["data"]["note"] = NOTES[r["data"]["name"]]
-    records.append(rec("demo-folder", "folder", {"name": "Full body", "order": 1}, 1))
+    records.append(rec("demo-folder", "folder", {"name": "Full body", "order": 1, "current": True}, 1))
+    records.append(rec("demo-folder-2", "folder", {"name": "Split", "order": 2}, 1))
+    records.append(rec("demo-tpl-split", "template", {
+        "name": "Upper body", "folder": "demo-folder-2", "days": [], "color": "var(--accent-lavender)", "order": 9,
+        "items": [{"exercise": slug(n), "rest": None, "sets": [{}, {}, {}]} for n in
+                  ("Chest Press (Machine)", "Seated Cable Row - V Grip", "Shoulder Press (Machine)", "Bicep Curl (Cable)")]}, 1))
 
     for i, (name, days, color, items) in enumerate(TEMPLATES):
         records.append(rec(f"demo-tpl-{i}", "template", {
@@ -96,7 +101,7 @@ def build(out: Path = OUT) -> Path:
             shutil.copy2(p, out / rel)
 
     data = demo_records(int(time.time() * 1000))
-    (out / "demo-data.js").write_text("window.VEERGYM_DEMO = true;\nwindow.VEERGYM_DEMO_DATA = " + json.dumps(data, ensure_ascii=False) + ";\n")
+    (out / "demo-data.js").write_text("window.VEERGYM_DEMO = true;\nwindow.VEERGYM_DEMO_DATA = " + json.dumps(data, ensure_ascii=True) + ";\n")
 
     # Het Artifact-platform zet zelf <html>, <head> en <body> om de pagina heen.
     (out / "index.html").write_text("""<title>Veergym</title>

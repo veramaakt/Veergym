@@ -65,3 +65,17 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
 
 /* Alleen in de demo (tools/build_demo.py). */
 .demo-bar { flex: none; text-align: center; padding: 6px 16px; background: var(--accent-citrus); color: var(--accent-citrus-ink); font-size: var(--body-sm-size); font-weight: 700; }
+
+/* Spierfiguur (app/muscles.js) */
+:root { --muscle-body: #f1e9de; --muscle-off: #ddd0bf; --muscle-line: #ffffff; --muscle-secondary: #d9cbff; }
+[data-theme="dark"] { --muscle-body: #2a231b; --muscle-off: #3a3127; --muscle-line: #17130f; --muscle-secondary: #5b4f7a; }
+
+/* Kleur per spiergroep, voor de krachtgrafieken op Voortgang. */
+:root {
+  --g-benen: #FF7144; --g-billen: #C94FC9; --g-borst: #334ED8; --g-rug: #2F8F6B;
+  --g-schouders: #7D5CD6; --g-armen: #9A8F0E; --g-core: #3E9A33; --g-cardio: #C9803E; --g-overig: #75664f;
+}
+[data-theme="dark"] {
+  --g-benen: #ff7d4d; --g-billen: #e88ce8; --g-borst: #6f88ff; --g-rug: #7fd3b0;
+  --g-schouders: #C7B0FF; --g-armen: #E0E446; --g-core: #C0F0AA; --g-cardio: #FFD2A8; --g-overig: #9a8c7b;
+}

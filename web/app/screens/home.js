@@ -1,4 +1,4 @@
-import { html, DS, FILLS, useState, Icon } from "../ui.js";
+import { html, DS, FILLS, useState, Icon, Switch } from "../ui.js";
 import * as store from "../store.js";
 import { WEEKDAYS, dateLong, dateShort, minutes, kg, volume, doneWorkouts, weekdayLabel, coachSummary } from "../logic.js";
 import { startWorkout, saveActive } from "../session.js";
@@ -73,13 +73,23 @@ export function Home({ ctx }) {
   const { templates, folders, workouts, exById, active } = ctx;
   const [openMap, setOpenMap] = useState(() => store.getMeta("folderOpen", {}));
   const toggle = (id) => {
-    const m = { ...openMap, [id]: !(openMap[id] ?? true) };
+    const m = { ...openMap, [id]: !isOpen(id) };
     setOpenMap(m);
     store.setMeta("folderOpen", m);
   };
 
   const now = Date.now();
-  const planned = nextPlanned(templates, now);
+  // Het "huidige" mapje: blijft open, en de volgende training komt daaruit.
+  const current = folders.find((f) => f.current);
+  const planned = nextPlanned(current ? templates.filter((t) => t.folder === current.id) : templates, now);
+  const setCurrent = (id, on) => {
+    for (const f of folders) {
+      const want = on && f.id === id;
+      if (!!f.current !== want) store.update(f.id, { current: want });
+    }
+    setOpenMap({});
+    store.setMeta("folderOpen", {});
+  };
   const today = planned && planned.offset === 0;
   const recent = doneWorkouts(workouts).slice(0, 3);
 
@@ -92,6 +102,9 @@ export function Home({ ctx }) {
   const groups = sortTemplates(folders).map((f) => ({ id: f.id, name: f.name, items: sortTemplates(templates.filter((t) => t.folder === f.id)) }));
   const loose = sortTemplates(templates.filter((t) => !t.folder || !folders.some((f) => f.id === t.folder)));
   if (loose.length || !groups.length) groups.push({ id: "_none", name: folders.length ? "Zonder mapje" : "Alle schema's", items: loose });
+  // Mapjes staan standaard dicht, behalve het mapje met je volgende training (of als er maar één is).
+  // Standaard: alleen het huidige mapje open. Geen huidig mapje? Dan dat met je volgende training.
+  const isOpen = (id) => openMap[id] ?? (groups.length === 1 || (current ? id === current.id : !!groups.find((g) => g.id === id)?.items.some((t) => t.id === planned?.template.id)));
 
   let heroTitle = today ? "Trainingsdag" : "Rustdag";
   let panel;
@@ -101,6 +114,10 @@ export function Home({ ctx }) {
   } else if (planned) {
     const label = today ? "Vandaag" : planned.offset === 1 ? "Morgen" : DAY_NAMES[planned.day];
     panel = { label: today ? "Training van vandaag" : "Volgende training", name: `${label} · ${planned.template.name || "Naamloos"}`, btn: "Start", onClick: () => start(ctx, planned.template) };
+  } else if (current && templates.some((t) => t.folder === current.id)) {
+    const first = sortTemplates(templates.filter((t) => t.folder === current.id))[0];
+    heroTitle = "Vandaag";
+    panel = { label: `Uit je huidige schema · ${current.name}`, name: first.name || "Naamloos", btn: "Start", onClick: () => start(ctx, first) };
   } else {
     heroTitle = "Vandaag";
     panel = { label: templates.length ? "Geen dagen ingepland" : "Nog geen schema's", name: "Vrije training", btn: "Start", onClick: () => start(ctx, null) };
@@ -141,13 +158,21 @@ export function Home({ ctx }) {
         </div>
       </div>
       ${groups.map((g) => {
-        const open = openMap[g.id] ?? true;
+        const open = isOpen(g.id);
         return html`<div key=${g.id} style=${{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 4 }}>
-          <button type="button" class="plainbtn" onClick=${() => toggle(g.id)} style=${{ width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style=${{ display: "grid", placeItems: "center", color: "var(--ink-soft)", transform: open ? "none" : "rotate(-90deg)", transition: "transform .15s ease" }}>${Icon("chevron-down", 18)}</span>
-            <span class="flex1 body">${g.name}</span>
-            <span class="sub">${g.items.length}</span>
-          </button>
+          <div class="row" style=${{ gap: 4 }}>
+            <button type="button" class="plainbtn flex1" onClick=${() => toggle(g.id)} style=${{ minHeight: 44, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style=${{ display: "grid", placeItems: "center", color: "var(--ink-soft)", transform: open ? "none" : "rotate(-90deg)", transition: "transform .15s ease" }}>${Icon("chevron-down", 18)}</span>
+              <span class="flex1" style=${{ display: "flex", flexDirection: "column" }}>
+                <span class="body">${g.name}</span>
+                <span class="sub">${g.items.length} ${g.items.length === 1 ? "schema" : "schema's"}${current?.id === g.id ? " · huidig" : ""}</span>
+              </span>
+            </button>
+            ${g.id !== "_none" && html`<div class="row" style=${{ gap: 0, marginRight: -6 }}>
+              <span class="caption" style=${{ letterSpacing: ".04em" }}>Huidig</span>
+              <${Switch} on=${current?.id === g.id} label=${`${g.name} als huidig schema`} onChange=${(on) => setCurrent(g.id, on)} />
+            </div>`}
+          </div>
           ${open && html`<div>
             ${g.items.map((t, i) => html`<div key=${t.id} class="row" style=${{ padding: "6px 0" }}>
               <button type="button" class="plainbtn flex1" style=${{ minHeight: 48, display: "flex", alignItems: "center", gap: 12 }} onClick=${() => ctx.go("template", { id: t.id })}>

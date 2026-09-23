@@ -30,3 +30,13 @@ export function useTick(active, ms = 250) {
     return () => clearInterval(t);
   }, [active, ms]);
 }
+
+/** Aan/uit-schuifje (44px tikvlak). */
+export function Switch({ on, onChange, label }) {
+  return html`<button type="button" role="switch" aria-checked=${on} aria-label=${label} onClick=${() => onChange(!on)}
+    style=${{ width: 52, height: 44, border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "grid", placeItems: "center", flex: "none" }}>
+    <span style=${{ width: 38, height: 22, borderRadius: "var(--radius-pill)", background: on ? "var(--ink)" : "var(--surface-tint)", border: on ? "1px solid var(--ink)" : "1px solid var(--border)", position: "relative", transition: "background .15s ease" }}>
+      <span style=${{ position: "absolute", top: 2, left: on ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: on ? "var(--surface-primary)" : "var(--ink-soft)", transition: "left .15s ease" }}></span>
+    </span>
+  </button>`;
+}

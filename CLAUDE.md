@@ -39,3 +39,8 @@ Vera wil niet zelf pushen. Als een wijziging af en getest is, draai:
 (kopieert naar de app-map en pusht naar GitHub; de token staat in de macOS-sleutelhanger).
 Alleen werkende, geteste code. Stopt de sleutelcontrole? Los de oorzaak op, nooit omzeilen.
 Meld Vera daarna wat er gepusht is en dat ze `start.command` moet herstarten.
+
+## Backlog (besloten met Vera)
+- Strength level-balk (beginner → elite, zoals Hevy) op oefening/voortgang: bouwen ná Metingen, want hij heeft lichaamsgewicht nodig (plus leeftijd, geslacht).
+- Kleuren: krachtgrafieken krijgen een kleur per spiergroep (`groupColor` in `web/app/stats.js`, tokens `--g-*` in `app.css`).
+- Spierfiguur: `web/vendor/muscle-female.js` (react-muscle-highlighter, MIT), koppeling in `web/app/muscles.js`.

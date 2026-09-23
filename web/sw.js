@@ -1,6 +1,6 @@
 // Service worker: bewaart de app op je telefoon, zodat hij zonder bereik opent.
 // Verhoog VERSION na een update, dan haalt de app de nieuwe bestanden op.
-const VERSION = "veergym-v3";
+const VERSION = "veergym-v4";
 const SHELL = [
   "./",
   "index.html",
@@ -21,6 +21,7 @@ const SHELL = [
   "vendor/react.production.min.js",
   "vendor/react-dom.production.min.js",
   "vendor/htm.umd.js",
+  "vendor/muscle-female.js",
   "app/app.css",
   "app/main.js",
   "app/ui.js",
@@ -30,6 +31,7 @@ const SHELL = [
   "app/session.js",
   "app/clipboard.js",
   "app/stats.js",
+  "app/muscles.js",
   "app/screens/login.js",
   "app/screens/later.js",
   "app/screens/home.js",

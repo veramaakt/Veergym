@@ -91,3 +91,8 @@ repository Veergym). macOS onthoudt hem daarna in de sleutelhanger.
 ## Voor ontwikkelaars (of Claude)
 
 Zie `CLAUDE.md`. Tests: `conda run -n veergym python -m pytest -q`.
+
+## Licenties van meegeleverde onderdelen
+
+React en htm (MIT), Plus Jakarta Sans (SIL Open Font License), spierfiguur uit
+[react-muscle-highlighter](https://github.com/soroojshehryar/react-muscle-highlighter) (MIT).

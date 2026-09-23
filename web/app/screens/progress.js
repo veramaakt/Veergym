@@ -1,21 +1,22 @@
 import { html, DS, useState, useMemo, Icon } from "../ui.js";
 import * as store from "../store.js";
 import { kg, dateNum, doneWorkouts, volume } from "../logic.js";
-import { inRange, strengthCharts, volumeBuckets, countPrs, formatMetric, METRICS, MONTHS_LONG, monthOf, shiftMonth } from "../stats.js";
+import { inRange, strengthCharts, volumeBuckets, countPrs, formatMetric, METRICS, MONTHS_LONG, monthOf, shiftMonth, groupColor } from "../stats.js";
 
 const SHOW = 6;
 
 function StrengthChart({ ctx, c, onMetric }) {
   const delta = c.pct === 0 ? "0%" : (c.pct > 0 ? "+" : "−") + Math.abs(c.pct) + "%";
   const fmt = (v) => formatMetric(c.type, v, c.metric);
+  const color = groupColor(c.ex.group);
   return html`<div style=${{ borderTop: "1px solid var(--border)", marginTop: 16, paddingTop: 14 }}>
     <button type="button" class="plainbtn" onClick=${() => ctx.go("exercise", { id: c.id })} style=${{ width: "100%", display: "flex", alignItems: "center", gap: 10 }}>
-      <${DS.IconBadge} icon="dumbbell" size=${30} fill="var(--accent-orange)" color="var(--accent-orange-ink)" />
-      <div class="flex1 body">${c.ex.name}</div>
+      <${DS.IconBadge} icon="dumbbell" size=${30} fill=${`color-mix(in srgb, ${color} 20%, var(--surface-primary))`} color=${color} />
+      <div class="flex1"><div class="body">${c.ex.name}</div><div class="sub">${c.ex.group || "Overig"}</div></div>
       <div style=${{ fontSize: "var(--delta-size)", lineHeight: "var(--delta-line)", fontWeight: 700, color: c.good ? "var(--delta-up)" : "var(--ink-soft)" }}>${delta}</div>
     </button>
     <div class="display" style=${{ marginTop: 8 }}>${fmt(c.value)}</div>
-    <${DS.LineChart} values=${c.points.map((p) => p.v)} labels=${c.points.map((p) => dateNum(p.at))} prIndex=${c.prIndex} height=${116} formatValue=${fmt} />
+    <${DS.LineChart} values=${c.points.map((p) => p.v)} labels=${c.points.map((p) => dateNum(p.at))} prIndex=${c.prIndex} height=${116} formatValue=${fmt} color=${color} />
     <div style=${{ marginTop: 18 }}><${DS.MetricSelector} options=${METRICS[c.type] || METRICS.kg} value=${c.metric} onChange=${onMetric} /></div>
   </div>`;
 }

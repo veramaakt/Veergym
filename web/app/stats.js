@@ -10,8 +10,8 @@ export const MONTHS_LONG = ["januari", "februari", "maart", "april", "mei", "jun
 const DAY_SHORT = ["zo", "ma", "di", "wo", "do", "vr", "za"];
 
 export const METRICS = {
-  kg: ["Zwaarste gewicht", "Geschat 1RM", "Meeste reps"],
-  assist: ["Laagste assist", "Meeste reps"],
+  kg: ["Zwaarste gewicht", "Geschat 1RM", "Beste set", "Sessievolume", "Totaal reps"],
+  assist: ["Laagste assist", "Meeste reps", "Totaal reps"],
   reps: ["Meeste reps", "Totaal reps"],
   duur: ["Langste tijd", "Totale tijd"],
   afstand: ["Verste afstand", "Totale tijd"],
@@ -30,6 +30,8 @@ export function sessionValue(type, sets, metric) {
   switch (metric) {
     case "Meeste reps": return b.maxR || null;
     case "Totaal reps": return sum("r");
+    case "Beste set": return Math.max(0, ...counted.map((s) => (Number(s.w) || 0) * (Number(s.r) || 0))) || null;
+    case "Sessievolume": return counted.reduce((n, s) => n + (Number(s.w) || 0) * (Number(s.r) || 0), 0) || null;
     case "Totale tijd": return sum("dur");
     case "Geschat 1RM": return b.e1rm ? Math.round(b.e1rm * 2) / 2 : null;
     case "Laagste assist": return b.minW;
@@ -38,6 +40,21 @@ export function sessionValue(type, sets, metric) {
     default: return b.maxW;
   }
 }
+
+/** Uitleg bij een meetwaarde, voor onder de grafiek. */
+export const METRIC_HELP = {
+  "Zwaarste gewicht": "Het zwaarste gewicht dat je per sessie tilde.",
+  "Geschat 1RM": "Wat je naar schatting één keer zou kunnen tillen (Epley-formule).",
+  "Beste set": "Je zwaarste set per sessie: gewicht × reps.",
+  "Sessievolume": "Alle sets van deze oefening in een sessie opgeteld: gewicht × reps.",
+  "Totaal reps": "Alle reps van deze oefening in een sessie opgeteld.",
+  "Laagste assist": "Hoeveel hulp je nodig had. Lager is beter.",
+  "Meeste reps": "Je beste set in aantal reps.",
+};
+
+const GROUP_SLUG = { Benen: "benen", Billen: "billen", Borst: "borst", Rug: "rug", Schouders: "schouders", Armen: "armen", Core: "core", Cardio: "cardio" };
+/** Vaste kleur per spiergroep (tokens in app.css), voor lijn en icoon. */
+export const groupColor = (group) => `var(--g-${GROUP_SLUG[group] || "overig"})`;
 
 /** Is een lagere waarde beter? Alleen bij het assist-gewicht. */
 export const lowerIsBetter = (metric) => metric === "Laagste assist";
