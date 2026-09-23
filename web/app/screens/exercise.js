@@ -38,7 +38,7 @@ function SessionBlock({ h, type, pr }) {
     </div>
     <div class="caption" style=${{ display: "flex", gap: 10, padding: "10px 10px 4px" }}>
       <span style=${{ width: 28, flex: "none" }}>Set</span>
-      ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center" }}>${type === "assist" && f.k === "w" ? "Assist" : f.label}</span>`)}
+      ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "left" }}>${type === "assist" && f.k === "w" ? "Assist" : f.label}</span>`)}
     </div>
     ${h.sets.map((s, i) => {
       const normal = !s.type || s.type === "normal";
@@ -47,9 +47,9 @@ function SessionBlock({ h, type, pr }) {
       return html`<div key=${i} style=${{ padding: "6px 10px", borderRadius: "var(--radius-md)", background: i % 2 ? "transparent" : "var(--surface-tint)" }}>
         <div class="row" style=${{ gap: 10 }}>
           <span style=${{ width: 28, flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 700, color: "var(--ink-soft)" }}>${normal ? n : html`<${DS.SetTypeBadge} type=${s.type} />`}</span>
-          ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center", fontSize: "var(--body-md-size)", fontWeight: 800 }}>${cell(f, s)}</span>`)}
+          ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "left", fontSize: "var(--body-md-size)", fontWeight: 800 }}>${cell(f, s)}</span>`)}
         </div>
-        ${hit && html`<div style=${{ display: "flex", gap: 6, padding: "4px 0 2px 38px" }}>
+        ${hit && html`<div style=${{ display: "flex", gap: 6, padding: "4px 0 2px 30px" }}>
           ${[...new Set(hit.labels.map(prTag))].map((t) => html`<span key=${t} class="pr-badge" style=${{ display: "inline-flex", alignItems: "center", gap: 4 }}>${Icon("trend", 12)}${t}</span>`)}
         </div>`}
       </div>`;
