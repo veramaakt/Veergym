@@ -62,3 +62,6 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
 
 /* Radardiagram: labels mogen buiten het vlak vallen, anders worden ze afgeknipt. */
 .radar svg { overflow: visible; }
+
+/* Alleen in de demo (tools/build_demo.py). */
+.demo-bar { flex: none; text-align: center; padding: 6px 16px; background: var(--accent-citrus); color: var(--accent-citrus-ink); font-size: var(--body-sm-size); font-weight: 700; }

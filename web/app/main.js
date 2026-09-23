@@ -1,5 +1,5 @@
 // Startpunt van de app: opslag openen, synchroniseren, schermen tonen.
-import { html, DS, useState, useEffect, useMemo, useSyncExternalStore, Sheet } from "./ui.js";
+import { html, DS, DEMO, useState, useEffect, useMemo, useSyncExternalStore, Sheet } from "./ui.js";
 import * as store from "./store.js";
 import { startSync, getStatus, subscribeStatus, syncNow } from "./sync.js";
 import { getActive } from "./session.js";
@@ -87,6 +87,7 @@ function App() {
 
   const isTab = TAB_SCREENS.has(nav.screen);
   return html`<div class="app">
+    ${DEMO && html`<div class="demo-bar">Demo met voorbeelddata · plaats gerust comments</div>`}
     <div class="screen"><${S} ctx=${ctx} params=${nav.params} screen=${nav.screen} /></div>
     <div class="dock">
       ${toast && html`<${DS.Toast} ...${toast} onDismiss=${() => setToast(null)} />`}
@@ -97,10 +98,20 @@ function App() {
   </div>`;
 }
 
+/** Demo: vul de app met voorbeelddata als hij nog leeg is. */
+function seedDemo() {
+  store.applyRemote(window.VEERGYM_DEMO_DATA || []);
+  store.setMeta("token", "demo");
+}
+
 async function boot() {
   await store.openStore();
-  startSync();
-  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+  if (DEMO) {
+    if (!store.getMeta("token")) seedDemo();
+  } else {
+    startSync();
+  }
+  if (!DEMO && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
   window.ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);

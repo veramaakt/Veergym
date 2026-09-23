@@ -20,18 +20,23 @@ function req(r) {
 }
 
 export async function openStore() {
-  db = await new Promise((resolve, reject) => {
-    const r = indexedDB.open(DB_NAME, 1);
-    r.onupgradeneeded = () => {
-      r.result.createObjectStore("records", { keyPath: "id" });
-      r.result.createObjectStore("meta", { keyPath: "k" });
-    };
-    r.onsuccess = () => resolve(r.result);
-    r.onerror = () => reject(r.error);
-  });
-  const tx = db.transaction(["records", "meta"]);
-  for (const rec of await req(tx.objectStore("records").getAll())) records.set(rec.id, rec);
-  for (const m of await req(tx.objectStore("meta").getAll())) meta.set(m.k, m.v);
+  try {
+    db = await new Promise((resolve, reject) => {
+      const r = indexedDB.open(DB_NAME, 1);
+      r.onupgradeneeded = () => {
+        r.result.createObjectStore("records", { keyPath: "id" });
+        r.result.createObjectStore("meta", { keyPath: "k" });
+      };
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+    });
+    const tx = db.transaction(["records", "meta"]);
+    for (const rec of await req(tx.objectStore("records").getAll())) records.set(rec.id, rec);
+    for (const m of await req(tx.objectStore("meta").getAll())) meta.set(m.k, m.v);
+  } catch (e) {
+    // Geen opslag beschikbaar (bijv. privévenster): de app werkt dan alleen in het geheugen.
+    db = null;
+  }
 }
 
 function notify() {
@@ -51,6 +56,7 @@ export function onLocalChange(fn) {
 }
 
 function write(recs) {
+  if (!db) return;
   const tx = db.transaction("records", "readwrite");
   recs.forEach((r) => tx.objectStore("records").put(r));
 }
@@ -144,6 +150,7 @@ export function getMeta(k, fallback = null) {
 
 export function setMeta(k, v) {
   meta.set(k, v);
+  if (!db) return notify();
   const tx = db.transaction("meta", "readwrite");
   if (v === null || v === undefined) tx.objectStore("meta").delete(k);
   else tx.objectStore("meta").put({ k, v });
@@ -154,6 +161,7 @@ export function setMeta(k, v) {
 export async function wipeLocal() {
   records.clear();
   meta.clear();
+  if (!db) return notify();
   const tx = db.transaction(["records", "meta"], "readwrite");
   tx.objectStore("records").clear();
   tx.objectStore("meta").clear();

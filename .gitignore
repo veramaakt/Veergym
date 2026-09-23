@@ -23,3 +23,6 @@ __pycache__/
 
 # Persoonlijke bestanden om mee te testen (bijv. Hevy-export): nooit naar GitHub
 prive/
+
+# Gebouwde demo (tools/build_demo.py)
+build/

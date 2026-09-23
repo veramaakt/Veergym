@@ -1,4 +1,4 @@
-import { html, DS, useState } from "../ui.js";
+import { html, DS, DEMO, useState } from "../ui.js";
 import * as store from "../store.js";
 import { time } from "../logic.js";
 
@@ -32,7 +32,8 @@ export function Settings({ ctx }) {
   const [theme, setT] = useState(document.documentElement.dataset.theme || "light");
   const settings = store.get("settings") || {};
   const restDefault = settings.restDefault ?? 90;
-  const exportIt = (path, name) => download(path, name).catch((e) => ctx.toast({ title: "Export lukt niet", detail: navigator.onLine ? e.message : "Exporteren kan alleen online.", icon: "close" }));
+  const notInDemo = () => ctx.toast({ title: "Niet in de demo", detail: "Dit werkt alleen in je echte app.", icon: "close" });
+  const exportIt = DEMO ? notInDemo : (path, name) => download(path, name).catch((e) => ctx.toast({ title: "Export lukt niet", detail: navigator.onLine ? e.message : "Exporteren kan alleen online.", icon: "close" }));
   const lastSync = ctx.sync.at ? new Date(ctx.sync.at).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : null;
 
   return html`<div class="fill">
@@ -60,7 +61,7 @@ export function Settings({ ctx }) {
           <${DS.Chip} onClick=${() => exportIt("api/export.csv", "veergym-workouts.csv")}>CSV<//>
           <${DS.Chip} onClick=${() => exportIt("api/export.json", "veergym.json")}>JSON<//>
         <//>
-        <${Row} title="Hevy-historie" sub="CSV uit Hevy importeren"><${DS.Chip} onClick=${() => ctx.go("import")}>Importeren<//><//>
+        <${Row} title="Hevy-historie" sub="CSV uit Hevy importeren"><${DS.Chip} onClick=${DEMO ? notInDemo : () => ctx.go("import")}>Importeren<//><//>
         <${Row} title="Google Sheet" sub="Metingen uit Gym dashboard · volgende bouwstap"><span class="tag">Later</span><//>
       </div>
 
@@ -75,11 +76,13 @@ export function Settings({ ctx }) {
         <div class="sub" style=${{ margin: "4px 0 8px" }}>Eén inlog, voor telefoon en desktop.${lastSync ? ` Laatst gesynchroniseerd om ${lastSync}.` : ""}</div>
         <${DS.SyncStatus} mode=${ctx.sync.mode} />
         ${ctx.sync.error && html`<div class="sub">${ctx.sync.error}</div>`}
-        <div class="chips" style=${{ marginTop: 12 }}>
+        ${DEMO ? html`<div class="chips" style=${{ marginTop: 12 }}>
+          <${DS.Chip} onClick=${async () => { await store.wipeLocal(); location.reload(); }}>Demo opnieuw beginnen<//>
+        </div>` : html`<div class="chips" style=${{ marginTop: 12 }}>
           <${DS.Chip} onClick=${() => ctx.syncNow()}>Nu synchroniseren<//>
           <${DS.Chip} onClick=${() => { store.setMeta("token", null); }}>Uitloggen<//>
-        </div>
-        <div class="sub" style=${{ marginTop: 8 }}>Uitloggen laat je gegevens op dit apparaat staan.</div>
+        </div>`}
+        <div class="sub" style=${{ marginTop: 8 }}>${DEMO ? "In de demo blijven wijzigingen alleen in jouw browser." : "Uitloggen laat je gegevens op dit apparaat staan."}</div>
       </div>
     </div>
   </div>`;

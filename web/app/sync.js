@@ -26,7 +26,7 @@ export function scheduleSync(delay = 1500) {
 
 export async function syncNow() {
   const token = store.getMeta("token");
-  if (!token) return;
+  if (!token || window.VEERGYM_DEMO) return;
   if (running) {
     again = true;
     return;

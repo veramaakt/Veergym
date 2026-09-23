@@ -5,6 +5,8 @@ export const { useState, useEffect, useMemo, useRef, useCallback, useSyncExterna
 export const html = window.htm.bind(R.createElement);
 export const DS = window.DesignSystem_de9512;
 export const Fragment = R.Fragment;
+// Demo-stand: zonder server en inlog, met voorbeelddata (zie tools/build_demo.py).
+export const DEMO = !!window.VEERGYM_DEMO;
 
 // Oefening-kleuren, in vaste volgorde (design: FILLS).
 export const FILLS = ["var(--accent-peach)", "var(--accent-mint)", "var(--accent-blue-light)", "var(--accent-lavender)", "var(--accent-pink)"];

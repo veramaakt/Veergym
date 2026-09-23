@@ -22,6 +22,12 @@ Persoonlijke fitness-app (zie `Aangeleverd/vision-brief-fitness-app.md`), design
   om te testen, maar komt nooit in git, in tests of in `web/`.
 - In htm: gebruik `autoFocus`/`inputMode` (React-casing) en `<${Fragment}>` i.p.v. `<>`.
 
+## Demo voor feedback
+`python tools/build_demo.py` bouwt `build/demo/` (gitignored): de app met `window.VEERGYM_DEMO`, zonder server/inlog,
+met verzonnen voorbeelddata. Gepubliceerd als privé-Artifact https://claude.ai/artifact/StRyRvkWDukTUsbgaYTK8j
+waar Vera comments plaatst (lees ze met ArtifactComments). Na elke afgeronde wijziging: demo opnieuw bouwen en
+republishen naar diezelfde url (file_path `build/demo/index.html`, root `build/demo`, alle bestanden als `files`).
+
 ## Commando's
 - Tests: `~/anaconda3/bin/conda run -n veergym python -m pytest -q`
 - Dev-server: `APP_PASSWORD=test VEERGYM_DATA_DIR=<scratch> conda run -n veergym uvicorn veergym.main:app --port 8765 --reload`
