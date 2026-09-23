@@ -101,14 +101,25 @@ def demo_records(now_ms: int) -> list[dict]:
             "fields": {f: round(v + change[f] * k + rnd.choice([-0.5, 0, 0, 0.5]), 1) for f, v in base.items()},
             "body": {"fat_pct": round(24 - k * 0.3, 1), "muscle_kg": round(52.5 + k * 0.15, 1), "fat_kg": round((75.5 - k * 0.25) * (24 - k * 0.3) / 100, 1),
                      "fatfree_kg": round((75.5 - k * 0.25) * (1 - (24 - k * 0.3) / 100), 1), "visceral": 7, "water_pct": round(52 + k * 0.2, 1), "bmr": 1580 + k * 4}}, day))
-    # Verzonnen eetnotities voor vandaag en gisteren.
-    meals = [("ontbijt", "Havermout met skyr, blauwe bessen en een schep pindakaas", 430, 32, 14, 48),
-             ("lunch", "Twee boterhammen met hüttenkäse, handje noten, appel", 480, 28, 19, 52),
-             ("snack", "Eiwitshake", 160, 25, 2, 8),
-             ("diner", "Linzencurry met rijst en spinazie", 620, 28, 18, 84)]
-    for back, count in ((0, 3), (1, 4)):
+    # Verzonnen eetnotities voor de laatste twee weken (vandaag nog zonder diner).
+    options = {
+        "ontbijt": [("Havermout met skyr, blauwe bessen en een schep pindakaas", 430, 32, 14, 48),
+                    ("Volkoren boterham met ei en avocado", 390, 20, 20, 30)],
+        "lunch": [("Twee boterhammen met hüttenkäse, handje noten, appel", 480, 28, 19, 52),
+                  ("Wrap met hummus, falafel en rauwkost", 520, 18, 22, 60)],
+        "snack": [("Eiwitshake", 160, 25, 2, 8), ("Appel met pindakaas", 190, 5, 10, 22), None],
+        "diner": [("Linzencurry met rijst en spinazie", 620, 28, 18, 84), ("Pasta pesto met kikkererwten", 680, 24, 26, 86),
+                  ("Tofu-roerbak met noedels en broccoli", 590, 30, 20, 70)],
+    }
+    for back in range(14):
         day = time.strftime("%Y-%m-%d", time.localtime((now_ms - back * DAY) / 1000))
-        for meal, note, kcal, p, f, c in meals[:count]:
+        for meal, choices in options.items():
+            if back == 0 and meal == "diner":
+                continue
+            pick = choices[0] if back == 0 else choices[(back + len(meal)) % len(choices)]
+            if pick is None:
+                continue
+            note, kcal, p, f, c = pick
             records.append(rec(f"f-{day}-{meal}", "food", {"date": day, "meal": meal, "note": note, "recipe": "",
                                                           "kcal": kcal, "protein": p, "fat": f, "carbs": c}, now_ms))
     return records

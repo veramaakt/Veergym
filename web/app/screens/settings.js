@@ -71,7 +71,15 @@ export function Settings({ ctx }) {
         <div class="caption" style=${{ margin: "14px 0 6px" }}>Wat Claude over je eten moet weten</div>
         <textarea class="field" style=${{ minHeight: 64 }} defaultValue=${settings.foodContext ?? DEFAULT_CONTEXT}
           onBlur=${(e) => store.put("settings", "settings", { ...settings, foodContext: e.target.value })} placeholder="Bijv. vegetarisch, standaardontbijt, merken die je vaak gebruikt"></textarea>
-        <div class="sub" style=${{ marginTop: 6 }}>Gaat mee met "Schat macro's", samen met je maaltijdnotitie. Schatten vraagt een Claude API-sleutel in .env.</div>
+        <div class="sub" style=${{ marginTop: 6 }}>Gaat mee met "Schat macro's", eettips en het weekoverzicht. Dit alles vraagt een Claude API-sleutel in .env.</div>
+        <div class="caption" style=${{ margin: "14px 0 6px" }}>Graag & in huis</div>
+        <textarea class="field" style=${{ minHeight: 80 }} defaultValue=${settings.foodPantry || ""}
+          onBlur=${(e) => store.put("settings", "settings", { ...(store.get("settings") || {}), foodPantry: e.target.value })} placeholder="Wat je lekker vindt en meestal in huis hebt, bijv. skyr, hüttenkäse, tofu, linzen, eieren, pindakaas"></textarea>
+        <div class="sub" style=${{ marginTop: 6 }}>Voor eettips en het weekoverzicht gaan ook je maaltijdnotities van de laatste 4 weken mee, zodat Claude voorstelt wat bij jou past.</div>
+        ${[["foodLikes", "Lekker gevonden"], ["foodDislikes", "Liever niet"]].map(([k, label]) => (settings[k] || []).length > 0 && html`<div key=${k}>
+          <div class="caption" style=${{ margin: "14px 0 6px" }}>${label} · tik om te wissen</div>
+          <div class="chips">${settings[k].map((n) => html`<${DS.Chip} key=${n} onClick=${() => store.put("settings", "settings", { ...settings, [k]: settings[k].filter((x) => x !== n) })}>${n}<//>`)}</div>
+        </div>`)}
       </div>
 
       <div class="section">

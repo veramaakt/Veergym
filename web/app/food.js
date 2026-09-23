@@ -103,3 +103,100 @@ export function foodSummary(weeks = 4) {
   const hit = logged.filter((t) => t.protein >= g.protein).length;
   return `\n\nEten (${logged.length} dagen met macro's):\n- Gemiddeld ${n(avg("kcal"))} kcal, ${n(avg("protein"))} g eiwit, ${n(avg("fat"))} g vet, ${n(avg("carbs"))} g koolhydraten\n- Eiwitdoel (${g.protein} g) gehaald op ${hit} van ${logged.length} dagen`;
 }
+
+// ---------- eettips en weekoverzicht (Claude) ----------
+// Claude "leert" niet echt: bij elke vraag gaat je eigen profiel mee (geschiedenis, lijst, duimpjes).
+
+const clean = (s) => String(s || "").trim().replace(/\s+/g, " ");
+
+/** Wat je de laatste weken at, met hoe vaak: "Ontbijt: havermout met skyr (5x)". */
+export function historyLines(days = 28, today = toISO(new Date())) {
+  const count = new Map();
+  for (let i = 0; i < days; i++) {
+    const date = shiftDay(today, -i);
+    for (const m of MEALS) {
+      const e = store.get(entryId(date, m.key));
+      const note = clean(e && e.note);
+      if (!note) continue;
+      const key = `${m.label}: ${note.slice(0, 200)}`;
+      count.set(key, (count.get(key) || 0) + 1);
+    }
+  }
+  return [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, 80).map(([k, c]) => (c > 1 ? `${k} (${c}x)` : k));
+}
+
+export function todayLines(date) {
+  return MEALS.map((m) => {
+    const e = store.get(entryId(date, m.key));
+    return e && clean(e.note) ? `${m.label}: ${clean(e.note)}` : null;
+  }).filter(Boolean);
+}
+
+export function profile() {
+  const s = store.get("settings") || {};
+  return {
+    history: historyLines(),
+    pantry: s.foodPantry || "",
+    likes: s.foodLikes || [],
+    dislikes: s.foodDislikes || [],
+    context: s.foodContext ?? DEFAULT_CONTEXT,
+  };
+}
+
+/** Duimpje op een tip: onthouden als "lekker" of "liever niet" (max. 30 per lijst). */
+export function rateTip(name, like) {
+  const s = store.get("settings") || {};
+  const n = clean(name);
+  const drop = (l) => (l || []).filter((x) => x.toLowerCase() !== n.toLowerCase());
+  const likes = drop(s.foodLikes), dislikes = drop(s.foodDislikes);
+  (like ? likes : dislikes).unshift(n);
+  store.put("settings", "settings", { ...s, foodLikes: likes.slice(0, 30), foodDislikes: dislikes.slice(0, 30) });
+}
+
+export function tipRating(name) {
+  const s = store.get("settings") || {};
+  const n = clean(name).toLowerCase();
+  if ((s.foodLikes || []).some((x) => x.toLowerCase() === n)) return "like";
+  if ((s.foodDislikes || []).some((x) => x.toLowerCase() === n)) return "dislike";
+  return null;
+}
+
+/** Een tip toevoegen aan een maaltijd: notitie erbij, macro's opgeteld. */
+export function addToMeal(date, meal, tip) {
+  const e = entry(date, meal);
+  const text = `${tip.name} (${tip.portion})`;
+  const data = { ...e, note: e.note ? `${e.note}, ${text}` : text };
+  for (const m of MACROS) data[m.key] = (Number(e[m.key]) || 0) + (Number(tip[m.key]) || 0);
+  saveEntry(date, meal, data);
+}
+
+/** De zondag die bij deze datum hoort (zelf, of de laatste ervoor). */
+export const lastSunday = (iso) => shiftDay(iso, -fromISO(iso).getDay());
+export const weekId = (sunday) => `fw-${sunday}`;
+
+/** Cijfers van de week (ma t/m zo), in de app zelf berekend. */
+export function weekStats(sunday) {
+  const days = Array.from({ length: 7 }, (_, i) => shiftDay(sunday, i - 6));
+  const logged = days.map(dayTotals).filter((t) => t.logged);
+  const g = goals();
+  const avg = (k) => (logged.length ? logged.reduce((a, t) => a + t[k], 0) / logged.length : 0);
+  return {
+    from: days[0], to: sunday, days: logged.length,
+    kcal: avg("kcal"), protein: avg("protein"), fat: avg("fat"), carbs: avg("carbs"),
+    proteinHit: logged.filter((t) => t.protein >= g.protein).length,
+    noted: days.filter((d) => todayLines(d).length).length,
+  };
+}
+
+export function weekInput(sunday) {
+  const st = weekStats(sunday);
+  return weekText(sunday) + (st.days ? `\nEiwitdoel gehaald op ${st.proteinHit} van ${st.days} dagen met macro's.` : "");
+}
+
+export function weekPlanText(sunday, review) {
+  const { date: from } = dayLabel(shiftDay(sunday, -6));
+  const { date: to } = dayLabel(sunday);
+  return [`Weekoverzicht eten (${from} t/m ${to})`, "", review.summary, "",
+    "Tips voor volgende week:", ...review.tips.map((t) => `- ${t.title}: ${t.detail}`), "",
+    "Ideeën voor het maaltijdplan:", ...review.meal_ideas.map((m) => `- ${m}`)].join("\n");
+}

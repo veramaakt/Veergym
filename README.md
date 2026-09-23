@@ -82,7 +82,7 @@ en een wachtwoord. Gebruik als wachtwoord een **personal access token** (GitHub 
 Developer settings > Personal access tokens > Fine-grained, met "Contents: Read and write" op de
 repository Veergym). macOS onthoudt hem daarna in de sleutelhanger.
 
-## Macro's laten schatten door Claude (optioneel)
+## Claude voor eten: macro's, tips en weekoverzicht (optioneel)
 
 Op het Eten-scherm kan de knop "Schat macro's" je maaltijdnotitie naar Claude sturen en kcal,
 eiwit, vet en koolhydraten voorstellen. Daarvoor heb je een eigen API-sleutel nodig (los van je
@@ -92,8 +92,16 @@ Claude-abonnement):
    maanden genoeg) en maak onder API Keys een sleutel aan.
 2. Zet hem in `Veergym - app/.env` achter `ANTHROPIC_API_KEY=` en herstart `start.command`.
 
-Alleen je maaltijdnotitie en de tekst bij Instellingen > "Wat Claude over je eten moet weten"
-worden meegestuurd. De sleutel blijft op je Mac; de app op je telefoon ziet hem nooit.
+Met dezelfde sleutel werken ook:
+- **Wat kan ik nog eten?** Tips voor de rest van de dag, op basis van wat je nog over hebt. Met
+  "Toevoegen" zet je een tip in een maaltijd, met "Lekker" en "Liever niet" leert Claude je smaak.
+- **Weekoverzicht** op zondag bovenaan Eten (en altijd via de knop onderaan): wat opviel, tips en
+  maaltijdideeën voor je plan van volgende week. Het wordt één keer per week gemaakt en bewaard.
+
+Wat er naar Claude gaat: bij "Schat macro's" alleen je maaltijdnotitie. Bij tips en het
+weekoverzicht ook je maaltijdnotities van de laatste 4 weken, je lijst "Graag & in huis", je
+duimpjes en je dagdoelen. Plus altijd de tekst bij Instellingen > "Wat Claude over je eten moet
+weten". De sleutel blijft op je Mac; de app op je telefoon ziet hem nooit.
 
 ## Je data
 
