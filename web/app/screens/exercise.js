@@ -91,14 +91,6 @@ export function ExerciseDetail({ ctx, params }) {
           <div class="chips">${GROUPS.map((g) => html`<${DS.Chip} key=${g} selected=${ex.group === g} onClick=${() => store.update(ex.id, { group: g })}>${g}<//>`)}</div>
         </div>
 
-        <div class="section">
-          <div class="title">Vaste notitie</div>
-          <div class="sub">Staat bij elke sessie boven je sets</div>
-          <textarea class="field" style=${{ marginTop: 10, minHeight: 72 }} value=${note} onInput=${(e) => setNote(e.target.value)} onBlur=${saveNote} placeholder="Stoelstand, repbereik, aanwijzingen"></textarea>
-        </div>
-
-        <${Records} type=${type} b=${b} />
-
         ${chrono.length >= 3 && html`<div class="section">
           <div class="title">Verloop</div>
           <div class="sub">${METRIC_HELP[metric] || ""}</div>
@@ -106,6 +98,14 @@ export function ExerciseDetail({ ctx, params }) {
           <${DS.LineChart} values=${chrono.map((p) => p.v)} labels=${chrono.map((p) => dateNum(p.at))} prIndex=${bi === chrono.length - 1 ? null : bi} color=${color} height=${140} formatValue=${fmt} />
           <div style=${{ marginTop: 18 }}><${DS.MetricSelector} options=${options} value=${metric} onChange=${setMetric} /></div>
         </div>`}
+
+        <div class="section">
+          <div class="title">Vaste notitie</div>
+          <div class="sub">Staat bij elke sessie boven je sets</div>
+          <textarea class="field" style=${{ marginTop: 10, minHeight: 72 }} value=${note} onInput=${(e) => setNote(e.target.value)} onBlur=${saveNote} placeholder="Stoelstand, repbereik, aanwijzingen"></textarea>
+        </div>
+
+        <${Records} type=${type} b=${b} />
 
         ${!hist.length && html`<div class="section"><${DS.EmptyState} icon="trend" title="Nog geen geschiedenis" body="Na je eerste sessie zie je hier je sets en records." /></div>`}
 
