@@ -23,7 +23,9 @@ function DueRow({ ctx, plan, any }) {
   const sub = plan.last === null ? (any ? "Vul je eerste meting in, of importeer je sheet" : "Vul je eerste meting in, of importeer je sheet of weegschaal") : `Laatste meting ${fmtDate(plan.last)}`;
   return html`<div class="row" style=${{ gap: 10, marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
     <div class="flex1"><div class="body">${title}</div><div class="sub">${sub}</div></div>
-    ${plan.due && html`<${DS.Button} size="sm" onClick=${() => ctx.go("measureEntry", {})}>Invullen<//>`}
+    ${plan.due
+      ? html`<${DS.Button} size="sm" onClick=${() => ctx.go("measureEntry", {})}>Invullen<//>`
+      : html`<${DS.Chip} onClick=${() => ctx.go("measureEntry", {})}>Invullen<//>`}
   </div>`;
 }
 
@@ -43,10 +45,7 @@ export function Measure({ ctx }) {
   const bodySummary = bodyRows.filter(({ f }) => f.key === "fat_pct" || f.key === "muscle_kg").map(({ f, s }) => `${f.key === "fat_pct" ? "Vet" : "Spieren"} ${num(s.value)} ${f.unit}`).join(" · ");
 
   return html`<div class="page">
-    <div class="row">
-      <div class="flex1 title">Metingen</div>
-      <button type="button" class="iconbtn" aria-label="Meting toevoegen" style=${{ color: "var(--ink)", marginRight: -8 }} onClick=${() => ctx.go("measureEntry", {})}>${Icon("plus", 20)}</button>
-    </div>
+    <div class="title">Metingen</div>
     <${DueRow} ctx=${ctx} plan=${plan} any=${list.length > 0} />
 
     ${!list.length ? html`<div class="section">
@@ -70,7 +69,7 @@ export function Measure({ ctx }) {
       <div class="section" style=${{ marginTop: 20 }}>
         <${FoldHeader} icon="bars" fill="var(--accent-lavender)" color="#211a12" title="Omtrekken" open=${!!folds.circ} onToggle=${() => fold("circ")}
           sub=${plan.last === null ? "Nog geen omtrekken" : folds.circ ? `Laatste meting ${fmtDate(plan.last)} · verschil t.o.v. start` : `${circSummary} cm`} />
-        ${!folds.circ ? null : plan.last === null ? html`<div class="sub" style=${{ marginTop: 10 }}>Nog geen omtrekken. Vul ze in met + of importeer je Google Sheet.</div>` : html`<div style=${{ marginTop: 8 }}>
+        ${!folds.circ ? null : plan.last === null ? html`<div class="sub" style=${{ marginTop: 10 }}>Nog geen omtrekken. Vul ze in via Invullen hierboven, of importeer je Google Sheet.</div>` : html`<div style=${{ marginTop: 8 }}>
           ${fields().map((f, i) => {
             const s = sinceStart(series(list, f.key));
             return html`<${DS.MeasurementRow} key=${f.key} first=${i === 0} label=${f.label} value=${cm(s.value)}
