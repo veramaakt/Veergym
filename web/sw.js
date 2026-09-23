@@ -1,6 +1,6 @@
 // Service worker: bewaart de app op je telefoon, zodat hij zonder bereik opent.
 // Verhoog VERSION na een update, dan haalt de app de nieuwe bestanden op.
-const VERSION = "veergym-v5";
+const VERSION = "veergym-v6";
 const SHELL = [
   "./",
   "index.html",

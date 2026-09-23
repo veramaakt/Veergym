@@ -14,6 +14,12 @@ fi
 if ! "$CONDA" env list | grep -q "^veergym "; then
   echo "Eerste keer: conda-omgeving 'veergym' aanmaken (duurt een paar minuten)..."
   "$CONDA" env create -f environment.yml || { read -p "Mislukt. Enter om te sluiten."; exit 1; }
+  cp environment.yml .conda-env-stamp
+elif ! cmp -s environment.yml .conda-env-stamp; then
+  # Er zijn nieuwe pakketten nodig sinds de vorige keer (bijv. na een update van Claude).
+  echo "Conda-omgeving 'veergym' bijwerken (eenmalig, even geduld)..."
+  "$CONDA" env update -n veergym -f environment.yml --prune || { read -p "Bijwerken mislukt. Enter om te sluiten."; exit 1; }
+  cp environment.yml .conda-env-stamp
 fi
 
 if [ ! -f .env ] || ! grep -q "^APP_PASSWORD=." .env; then

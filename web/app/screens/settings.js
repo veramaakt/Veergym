@@ -90,12 +90,13 @@ export function Settings({ ctx }) {
         <//>
         <${Row} title="Hevy-historie" sub="CSV uit Hevy importeren"><${DS.Chip} onClick=${DEMO ? notInDemo : () => ctx.go("import")}>Importeren<//><//>
         <${Row} title="Google Sheet" sub="Metingen uit Gym dashboard (CSV)"><${DS.Chip} onClick=${() => ctx.go("measureImport")}>Importeren<//><//>
+        <${Row} title="Weegschaal" sub="Wegingen uit de Feelfit-app (Excel)"><${DS.Chip} onClick=${() => ctx.go("measureImport")}>Importeren<//><//>
       </div>
 
       <div class="section">
         <div class="row" style=${{ gap: 10 }}><div class="flex1 title">Koppelingen</div><span class="tag">Fase 2</span></div>
         <${Row} first title="Health Connect" sub="Galaxy Watch 7: slaap, stappen, rusthartslag, trainingen. Alleen lezen." />
-        <${Row} title="MyFitt-weegschaal" sub="Nog uitzoeken of hij naar Health Connect schrijft" />
+        <${Row} title="Feelfit-weegschaal" sub="Nu via export; automatisch koppelen kan later" />
       </div>
 
       <div class="section">

@@ -97,7 +97,9 @@ def demo_records(now_ms: int) -> list[dict]:
         date = time.strftime("%Y-%m-%d", time.localtime(day / 1000))
         records.append(rec("m-" + date, "measurement", {
             "date": date, "weight": round(75.5 - k * 0.25 + rnd.choice([-0.2, 0, 0.2]), 1), "note": "",
-            "fields": {f: round(v + change[f] * k + rnd.choice([-0.5, 0, 0, 0.5]), 1) for f, v in base.items()}}, day))
+            "fields": {f: round(v + change[f] * k + rnd.choice([-0.5, 0, 0, 0.5]), 1) for f, v in base.items()},
+            "body": {"fat_pct": round(24 - k * 0.3, 1), "muscle_kg": round(52.5 + k * 0.15, 1), "fat_kg": round((75.5 - k * 0.25) * (24 - k * 0.3) / 100, 1),
+                     "fatfree_kg": round((75.5 - k * 0.25) * (1 - (24 - k * 0.3) / 100), 1), "visceral": 7, "water_pct": round(52 + k * 0.2, 1), "bmr": 1580 + k * 4}}, day))
     return records
 
 

@@ -16,6 +16,27 @@ export const DEFAULT_FIELDS = [
   { key: "bovenarm_r", label: "Bovenarm R" },
 ];
 
+// Lichaamssamenstelling van de weegschaal (Feelfit), in het veld "body" van een meting.
+export const BODY_FIELDS = [
+  { key: "fat_pct", label: "Vetpercentage", unit: "%" },
+  { key: "muscle_kg", label: "Spiermassa", unit: "kg" },
+  { key: "fat_kg", label: "Vetmassa", unit: "kg" },
+  { key: "fatfree_kg", label: "Vetvrije massa", unit: "kg" },
+  { key: "visceral", label: "Visceraal vet", unit: "" },
+  { key: "water_pct", label: "Lichaamswater", unit: "%" },
+  { key: "bmr", label: "BMR (ruststofwisseling)", unit: "kcal" },
+];
+
+/** Naam en eenheid voor een sleutel: "weight", een omtrek, of "body.fat_pct". */
+export function describe(key) {
+  if (key === "weight") return { label: "Gewicht", unit: "kg" };
+  if (key.startsWith("body.")) {
+    const f = BODY_FIELDS.find((b) => "body." + b.key === key);
+    return { label: f?.label || key, unit: f?.unit ?? "" };
+  }
+  return { label: fields({ includeHidden: true }).find((f) => f.key === key)?.label || key, unit: "cm" };
+}
+
 const DAY = 86400000;
 const MONTHS = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
 const DAYS = ["zo", "ma", "di", "wo", "do", "vr", "za"];
@@ -58,7 +79,7 @@ export function measurements() {
 export function series(list, key) {
   const out = [];
   for (const m of list) {
-    const v = key === "weight" ? m.weight : m.fields?.[key];
+    const v = key === "weight" ? m.weight : key.startsWith("body.") ? m.body?.[key.slice(5)] : m.fields?.[key];
     if (v !== null && v !== undefined && v !== "" && !Number.isNaN(Number(v))) out.push({ date: m.date, v: Number(v) });
   }
   return out;
@@ -100,8 +121,29 @@ export function saveMeasurement(date, { weight, fields: f, note }) {
     if (v !== "" && v !== null && v !== undefined && !Number.isNaN(Number(v))) clean[k] = Number(v);
   }
   const w = weight === "" || weight === undefined ? prev.weight ?? null : weight === null ? null : Number(weight);
-  store.put("measurement", id, { date, weight: w, fields: clean, note: note ?? prev.note ?? "" });
+  store.put("measurement", id, { ...prev, date, weight: w, fields: clean, note: note ?? prev.note ?? "" });
   return id;
+}
+
+/**
+ * Wegingen van de weegschaal opslaan. Bestaande waarden op dezelfde dag blijven staan;
+ * alleen wat ontbreekt wordt aangevuld. Geeft het aantal nieuwe en aangevulde dagen terug.
+ */
+export function importWeighings(rows) {
+  let added = 0, merged = 0;
+  for (const r of rows) {
+    const id = "m-" + r.date;
+    const prev = store.get(id);
+    if (!prev) {
+      store.put("measurement", id, { date: r.date, weight: r.weight, fields: {}, body: r.body, note: "", source: "feelfit" });
+      added++;
+    } else {
+      const { id: _i, ...data } = prev;
+      store.put("measurement", id, { ...data, weight: prev.weight ?? r.weight, body: { ...r.body, ...(prev.body || {}) } });
+      merged++;
+    }
+  }
+  return { added, merged };
 }
 
 // ---------- import uit een spreadsheet (CSV) ----------

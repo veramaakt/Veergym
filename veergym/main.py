@@ -9,7 +9,9 @@ from pydantic import BaseModel
 from sqlmodel import Session
 
 from . import __version__
-from . import hevy
+import base64
+
+from . import feelfit, hevy
 from .auth import check_password, make_token, require_auth
 from .config import WEB_DIR, get_settings
 from .db import Record, get_session, next_seq, select
@@ -112,6 +114,25 @@ def hevy_import(req: HevyImportRequest, session: Session = Depends(get_session))
     session.commit()
     ex_map = {e["id"]: e for e in exercises} | {r["id"]: r["data"] for r in records if r["kind"] == "exercise"}
     return {**report, "checks": hevy.progress_checks(records, ex_map, top=5)}
+
+
+class UploadedFile(BaseModel):
+    name: str
+    data: str  # base64
+
+
+class FeelfitRequest(BaseModel):
+    files: list[UploadedFile]
+
+
+@app.post("/api/import/feelfit", dependencies=[Depends(require_auth)])
+def feelfit_import(req: FeelfitRequest):
+    """Leest Feelfit-exports en geeft de wegingen terug; de app slaat ze op als metingen."""
+    try:
+        files = [(f.name, base64.b64decode(f.data)) for f in req.files]
+        return feelfit.parse(files)
+    except (feelfit.FeelfitError, ValueError) as e:
+        raise HTTPException(400, str(e))
 
 
 @app.get("/sw.js", include_in_schema=False)

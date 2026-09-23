@@ -12,6 +12,7 @@ data/
 *.sqlite
 
 # Lokale instellingen
+.conda-env-stamp
 deploy.local.json
 .claude/
 

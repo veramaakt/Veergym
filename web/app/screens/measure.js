@@ -3,16 +3,15 @@ import * as store from "../store.js";
 import { num } from "../logic.js";
 import {
   fields, measurements, series, sinceStart, weekWindow, nextMeasure, saveMeasurement,
-  fmtDate, fmtDay, todayISO, parseMeasurementsCSV,
+  fmtDate, fmtDay, todayISO, parseMeasurementsCSV, BODY_FIELDS, describe, importWeighings,
 } from "../measure.js";
 
 const cm = (v) => (v === null || v === undefined ? null : num(v));
-const signed = (d, unit) => (d === null || d === 0 ? "" : `${num(Math.abs(d))} ${unit}`);
-const label = (key) => (key === "weight" ? "Gewicht" : fields({ includeHidden: true }).find((f) => f.key === key)?.label || key);
+const signed = (d, unit) => (d === null || d === 0 ? "" : `${num(Math.abs(d))}${unit ? " " + unit : ""}`);
 
-function DueRow({ ctx, plan }) {
-  const title = plan.last === null ? "Nog geen metingen" : plan.missed ? "Meetmoment gemist" : plan.due ? "Meetmoment vandaag" : `Volgende meetmoment: ${fmtDay(plan.next)}`;
-  const sub = plan.last === null ? "Vul je eerste meting in, of importeer je sheet" : `Laatste meting ${fmtDate(plan.last)}`;
+function DueRow({ ctx, plan, any }) {
+  const title = plan.last === null ? (any ? "Nog geen omtrekken gemeten" : "Nog geen metingen") : plan.missed ? "Meetmoment gemist" : plan.due ? "Meetmoment vandaag" : `Volgende meetmoment: ${fmtDay(plan.next)}`;
+  const sub = plan.last === null ? (any ? "Vul je eerste meting in, of importeer je sheet" : "Vul je eerste meting in, of importeer je sheet of weegschaal") : `Laatste meting ${fmtDate(plan.last)}`;
   return html`<div class="row" style=${{ gap: 10, marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
     <div class="flex1"><div class="body">${title}</div><div class="sub">${sub}</div></div>
     ${plan.due && html`<${DS.Button} size="sm" onClick=${() => ctx.go("measureEntry", {})}>Invullen<//>`}
@@ -31,11 +30,11 @@ export function Measure({ ctx }) {
       <div class="flex1 title">Metingen</div>
       <button type="button" class="iconbtn" aria-label="Meting toevoegen" style=${{ color: "var(--ink)", marginRight: -8 }} onClick=${() => ctx.go("measureEntry", {})}>${Icon("plus", 20)}</button>
     </div>
-    <${DueRow} ctx=${ctx} plan=${plan} />
+    <${DueRow} ctx=${ctx} plan=${plan} any=${list.length > 0} />
 
     ${!list.length ? html`<div class="section">
-      <${DS.EmptyState} icon="scale" title="Nog geen metingen" body="Vul je gewicht en omtrekken in, of haal je metingen uit je Google Sheet."
-        action="Sheet importeren" onAction=${() => ctx.go("measureImport")} />
+      <${DS.EmptyState} icon="scale" title="Nog geen metingen" body="Vul je gewicht en omtrekken in, of haal je metingen uit je Google Sheet of weegschaal."
+        action="Importeren" onAction=${() => ctx.go("measureImport")} />
     </div>` : html`<div>
       <div class="section" style=${{ marginTop: 18 }}>
         <button type="button" class="plainbtn" style=${{ width: "100%" }} onClick=${() => ctx.go("measureDetail", { key: "weight" })}>
@@ -56,13 +55,25 @@ export function Measure({ ctx }) {
           <${DS.IconBadge} icon="bars" size=${30} fill="var(--accent-lavender)" color="#211a12" />
           <div><div class="body">Omtrekken</div><div class="sub">${plan.last ? `Laatste meting ${fmtDate(plan.last)} · ` : ""}verschil t.o.v. start</div></div>
         </div>
-        <div style=${{ marginTop: 8 }}>
+        ${plan.last === null ? html`<div class="sub" style=${{ marginTop: 10 }}>Nog geen omtrekken. Vul ze in met + of importeer je Google Sheet.</div>` : html`<div style=${{ marginTop: 8 }}>
           ${fields().map((f, i) => {
             const s = sinceStart(series(list, f.key));
             return html`<${DS.MeasurementRow} key=${f.key} first=${i === 0} label=${f.label} value=${cm(s.value)}
               sinceStart=${signed(s.delta, "cm")} direction=${s.direction} onClick=${() => ctx.go("measureDetail", { key: f.key })} />`;
           })}
-        </div>
+        </div>`}
+      </div>
+    </div>`}
+
+    ${list.some((m) => m.body && Object.keys(m.body).length) && html`<div class="section" style=${{ marginTop: 20 }}>
+      <div class="row" style=${{ gap: 10 }}>
+        <${DS.IconBadge} icon="radar" size=${30} fill="var(--accent-mint)" color="var(--accent-mint-ink)" />
+        <div><div class="body">Lichaamssamenstelling</div><div class="sub">Van je weegschaal · verschil t.o.v. eerste weging</div></div>
+      </div>
+      <div style=${{ marginTop: 8 }}>
+        ${BODY_FIELDS.map((f) => ({ f, s: sinceStart(series(list, "body." + f.key)) })).filter((x) => x.s.value !== null).map(({ f, s: st }, i) => html`<${DS.MeasurementRow}
+          key=${f.key} first=${i === 0} label=${f.label} value=${num(st.value)} unit=${f.unit}
+          sinceStart=${signed(st.delta, f.unit)} direction=${st.direction} onClick=${() => ctx.go("measureDetail", { key: "body." + f.key })} />`)}
       </div>
     </div>`}
 
@@ -79,26 +90,26 @@ export function Measure({ ctx }) {
 
 export function MeasureDetail({ ctx, params }) {
   const key = params.key;
-  const unit = key === "weight" ? "kg" : "cm";
+  const { label: title, unit } = describe(key);
   const list = measurements();
   const pts = series(list, key);
   const s = sinceStart(pts);
   return html`<div class="fill">
-    <${DS.TopBar} title=${label(key)} leading="close" onLeading=${ctx.back} />
+    <${DS.TopBar} title=${title} leading="close" onLeading=${ctx.back} />
     <div class="scroll">
       <div style=${{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
         <div class="caption">Laatste meting${s.lastDate ? " · " + fmtDate(s.lastDate) : ""}</div>
-        <div class="display" style=${{ marginTop: 4 }}>${s.value === null ? "–" : `${num(s.value)} ${unit}`}</div>
+        <div class="display" style=${{ marginTop: 4 }}>${s.value === null ? "–" : `${num(s.value)}${unit ? " " + unit : ""}`}</div>
         ${s.delta ? html`<div style=${{ fontSize: "var(--delta-size)", lineHeight: "var(--delta-line)", fontWeight: 700, color: "var(--ink-soft)" }}>${s.direction === "up" ? "↑" : "↓"}${signed(s.delta, unit)} sinds ${fmtDate(s.startDate)}</div>` : null}
       </div>
       ${pts.length >= 2
-        ? html`<div style=${{ marginTop: 16 }}><${DS.LineChart} values=${pts.map((p) => p.v)} labels=${pts.map((p) => fmtDate(p.date))} color="var(--accent-pink)" height=${140} formatValue=${(v) => `${num(v)} ${unit}`} /></div>`
+        ? html`<div style=${{ marginTop: 16 }}><${DS.LineChart} values=${pts.map((p) => p.v)} labels=${pts.map((p) => fmtDate(p.date))} color="var(--accent-pink)" height=${140} formatValue=${(v) => `${num(v)}${unit ? " " + unit : ""}`} /></div>`
         : html`<${DS.EmptyState} icon="trend" title="Nog geen verloop" body="Na twee metingen zie je hier een grafiek." />`}
       <div style=${{ borderTop: "1px solid var(--border)", marginTop: 24, paddingTop: 6 }}>
         ${[...pts].reverse().map((p) => html`<button type="button" key=${p.date} class="plainbtn" onClick=${() => ctx.go("measureEntry", { date: p.date })}
           style=${{ width: "100%", display: "flex", alignItems: "baseline", gap: 10, padding: "10px 0", fontSize: "var(--body-sm-size)", lineHeight: "var(--body-sm-line)" }}>
           <span class="flex1" style=${{ fontWeight: 600, color: "var(--ink-soft)" }}>${fmtDate(p.date)}</span>
-          <span style=${{ fontWeight: 800 }}>${num(p.v)} ${unit}</span>
+          <span style=${{ fontWeight: 800 }}>${num(p.v)}${unit ? " " + unit : ""}</span>
         </button>`)}
       </div>
       <div style=${{ borderTop: "1px solid var(--border)", marginTop: 8, paddingTop: 12 }}>
@@ -174,6 +185,34 @@ export function MeasureImport({ ctx }) {
   const [err, setErr] = useState("");
   const [done, setDone] = useState(null);
   const input = useRef(null);
+  const ffInput = useRef(null);
+  const [ff, setFf] = useState({ busy: false, res: null, err: "", done: null });
+
+  const pickFeelfit = async (e) => {
+    const list = [...e.target.files];
+    e.target.value = "";
+    if (!list.length) return;
+    setFf({ busy: true, res: null, err: "", done: null });
+    try {
+      const files = await Promise.all(list.map(async (f) => {
+        const bytes = new Uint8Array(await f.arrayBuffer());
+        let bin = "";
+        for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+        return { name: f.name, data: btoa(bin) };
+      }));
+      const r = await fetch("api/import/feelfit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + store.getMeta("token") },
+        body: JSON.stringify({ files }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(body.detail || "Inlezen mislukt (" + r.status + ")");
+      setFf({ busy: false, res: body, err: "", done: null });
+    } catch (x) {
+      setFf({ busy: false, res: null, err: navigator.onLine ? x.message : "Importeren kan alleen online.", done: null });
+    }
+  };
+  const runFeelfit = () => setFf({ ...ff, done: importWeighings(ff.res.rows) });
 
   const pick = async (e) => {
     const f = e.target.files[0];
@@ -203,6 +242,25 @@ export function MeasureImport({ ctx }) {
         <div style=${{ marginTop: 16 }}><${DS.Button} onClick=${() => (DEMO ? ctx.toast({ title: "Niet in de demo", detail: "Dit werkt alleen in je echte app.", icon: "close" }) : input.current.click())}>${res ? "Ander bestand kiezen" : "Bestand kiezen"}<//></div>
         ${err && html`<div class="error">${err}</div>`}
       </div>
+      <div class="section">
+        <input ref=${ffInput} type="file" multiple accept=".xlsx,.csv" onChange=${pickFeelfit} style=${{ display: "none" }} />
+        <div class="title">Uit je weegschaal (Feelfit)</div>
+        <div class="sub" style=${{ marginTop: 4 }}>Exporteer in de Feelfit-app je meetwaarden (Excel). Je kunt meerdere bestanden tegelijk kiezen; dubbele wegingen worden samengevoegd. Per dag telt de vroegste weging.</div>
+        <div style=${{ marginTop: 16 }}><${DS.Button} disabled=${ff.busy} onClick=${() => (DEMO ? ctx.toast({ title: "Niet in de demo", detail: "Dit werkt alleen in je echte app.", icon: "close" }) : ffInput.current.click())}>${ff.busy ? "Bezig met lezen…" : ff.res ? "Andere bestanden kiezen" : "Bestanden kiezen"}<//></div>
+        ${ff.err && html`<div class="error">${ff.err}</div>`}
+        ${ff.res && html`<div style=${{ marginTop: 14 }}>
+          <div class="body">${ff.res.rows.length} dagen met een weging</div>
+          <div class="sub">${ff.res.weighings} wegingen, ${fmtDate(ff.res.first)} t/m ${fmtDate(ff.res.last)}. Gewicht plus vetpercentage, spiermassa en meer.</div>
+          ${ff.done === null
+            ? html`<div style=${{ marginTop: 12 }}><${DS.Button} onClick=${runFeelfit}>Importeren<//></div>
+                <div class="sub" style=${{ marginTop: 8 }}>Staat er op een dag al een meting (bijv. uit je sheet), dan blijven die waarden staan en wordt alleen aangevuld.</div>`
+            : html`<div style=${{ marginTop: 12 }}>
+                <${DS.Toast} icon="check" fill="var(--accent-mint)" color="var(--accent-mint-ink)" title="Geïmporteerd" detail=${`${ff.done.added} nieuwe dagen, ${ff.done.merged} aangevuld`} />
+                <div style=${{ marginTop: 12 }}><${DS.Button} onClick=${() => ctx.tab("measure")}>Naar metingen<//></div>
+              </div>`}
+        </div>`}
+      </div>
+
       ${res && html`<div class="section">
         <div class="title">${name}</div>
         <div class="sub">${res.rows.length} ${res.rows.length === 1 ? "meting" : "metingen"} gevonden${res.skipped ? `, ${res.skipped} lege rijen overgeslagen` : ""}.${res.unknown.length ? ` Niet herkend en dus niet meegenomen: ${res.unknown.join(", ")}.` : ""}</div>
