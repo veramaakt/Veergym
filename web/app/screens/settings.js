@@ -1,5 +1,6 @@
 import { html, DS, DEMO, useState, Switch } from "../ui.js";
 import { fields as measureFields } from "../measure.js";
+import { seedDemo } from "../demo.js";
 import * as store from "../store.js";
 import { time } from "../logic.js";
 
@@ -105,7 +106,7 @@ export function Settings({ ctx }) {
         <${DS.SyncStatus} mode=${ctx.sync.mode} />
         ${ctx.sync.error && html`<div class="sub">${ctx.sync.error}</div>`}
         ${DEMO ? html`<div class="chips" style=${{ marginTop: 12 }}>
-          <${DS.Chip} onClick=${async () => { await store.wipeLocal(); location.reload(); }}>Demo opnieuw beginnen<//>
+          <${DS.Chip} onClick=${async () => { await seedDemo(); ctx.tab("home"); }}>Demo opnieuw beginnen<//>
         </div>` : html`<div class="chips" style=${{ marginTop: 12 }}>
           <${DS.Chip} onClick=${() => ctx.syncNow()}>Nu synchroniseren<//>
           <${DS.Chip} onClick=${() => { store.setMeta("token", null); }}>Uitloggen<//>

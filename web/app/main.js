@@ -3,6 +3,7 @@ import { html, DS, DEMO, useState, useEffect, useMemo, useSyncExternalStore, She
 import * as store from "./store.js";
 import { startSync, getStatus, subscribeStatus, syncNow } from "./sync.js";
 import { getActive } from "./session.js";
+import { ensureDemo } from "./demo.js";
 import { Login } from "./screens/login.js";
 import { Home } from "./screens/home.js";
 import { Workout, WorkoutDock } from "./screens/workout.js";
@@ -102,16 +103,10 @@ function App() {
   </div>`;
 }
 
-/** Demo: vul de app met voorbeelddata als hij nog leeg is. */
-function seedDemo() {
-  store.applyRemote(window.VEERGYM_DEMO_DATA || []);
-  store.setMeta("token", "demo");
-}
-
 async function boot() {
   await store.openStore();
   if (DEMO) {
-    if (!store.getMeta("token")) seedDemo();
+    await ensureDemo();
   } else {
     startSync();
   }

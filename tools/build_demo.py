@@ -6,6 +6,7 @@ De demo wordt als privé-Artifact op claude.ai gezet, zodat Vera er comments op 
 plaatsen. De voorbeelddata is verzonnen (vaste seed), nooit haar echte trainingen.
 """
 
+import hashlib
 import json
 import random
 import shutil
@@ -114,7 +115,12 @@ def build(out: Path = OUT) -> Path:
             shutil.copy2(p, out / rel)
 
     data = demo_records(int(time.time() * 1000))
-    (out / "demo-data.js").write_text("window.VEERGYM_DEMO = true;\nwindow.VEERGYM_DEMO_DATA = " + json.dumps(data, ensure_ascii=True) + ";\n")
+    payload = json.dumps(data, ensure_ascii=True)
+    # Versie = inhoud zonder tijdstempels: verandert alleen als de voorbeelddata echt anders is.
+    version = hashlib.sha1(json.dumps(demo_records(0), sort_keys=True).encode()).hexdigest()[:10]
+    (out / "demo-data.js").write_text("window.VEERGYM_DEMO = true;\n"
+                                      f"window.VEERGYM_DEMO_VERSION = \"{version}\";\n"
+                                      "window.VEERGYM_DEMO_DATA = " + payload + ";\n")
 
     # Het Artifact-platform zet zelf <html>, <head> en <body> om de pagina heen.
     (out / "index.html").write_text("""<meta charset="utf-8">
