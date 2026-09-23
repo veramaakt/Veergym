@@ -1,0 +1,106 @@
+import { html, DS, useState, Icon } from "../ui.js";
+import * as store from "../store.js";
+import { num } from "../logic.js";
+import { todayISO } from "../measure.js";
+import { MEALS, MACROS, goals, shiftDay, dayLabel, entry, saveEntry, dayTotals, dayText, weekText } from "../food.js";
+import { copyText } from "../clipboard.js";
+
+const cap = { fontSize: "var(--caption-size)", lineHeight: "var(--caption-line)", fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase" };
+const inputStyle = { width: "100%", height: 44, border: "none", borderRadius: "var(--radius-sm)", background: "var(--surface-tint)", fontFamily: "inherit", fontSize: "var(--body-md-size)", fontWeight: 800, textAlign: "center", outline: "none", color: "var(--ink)" };
+const fmt = (v) => (v === null || v === undefined ? null : num(v));
+const show = (v) => (v === null || v === undefined ? "" : num(v));
+
+function MealSheet({ ctx, date, meal }) {
+  const m = MEALS.find((x) => x.key === meal);
+  const e = entry(date, meal);
+  const [d, setD] = useState({ note: e.note || "", recipe: e.recipe || "", ...Object.fromEntries(MACROS.map((x) => [x.key, show(e[x.key])])) });
+  const save = () => { saveEntry(date, meal, d); ctx.closeSheet(); };
+  return html`<div>
+    <div class="title">${m.label}</div>
+    <textarea class="field" style=${{ marginTop: 12 }} value=${d.note} onInput=${(ev) => setD({ ...d, note: ev.target.value })} placeholder="Wat at je? In gewone taal." autoFocus></textarea>
+    <input class="field" style=${{ marginTop: 8, height: 44 }} value=${d.recipe} onInput=${(ev) => setD({ ...d, recipe: ev.target.value })} placeholder="Receptlink (optioneel)" />
+    <div style=${{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 8, marginTop: 12 }}>
+      ${MACROS.map((x) => html`<div key=${x.key}>
+        <div class="caption" style=${{ marginBottom: 4 }}>${x.key === "carbs" ? "Koolh." : x.label}</div>
+        <input inputMode="decimal" placeholder="–" value=${d[x.key]} onInput=${(ev) => setD({ ...d, [x.key]: ev.target.value })} style=${inputStyle} />
+      </div>`)}
+    </div>
+    <div class="row" style=${{ gap: 10, marginTop: 12 }}>
+      <div class="flex1 sub">Macro's vul je nu zelf in, bijvoorbeeld wat je coach je teruggeeft.</div>
+      <span class="tag">Schatten: fase 2</span>
+    </div>
+    <div style=${{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}><${DS.Button} onClick=${save}>Opslaan<//></div>
+  </div>`;
+}
+
+function CoachSheet({ date }) {
+  const [kind, setKind] = useState("dag");
+  const [copied, setCopied] = useState(false);
+  const text = kind === "dag" ? dayText(date) : weekText(date);
+  return html`<div>
+    <div class="title">Kopieer voor coach</div>
+    <div class="sub">Plak dit in je Claude-chat. Zet de geschatte macro's daarna terug in de maaltijden.</div>
+    <div class="chips" style=${{ marginTop: 10 }}>
+      <${DS.Chip} selected=${kind === "dag"} onClick=${() => { setKind("dag"); setCopied(false); }}>Deze dag<//>
+      <${DS.Chip} selected=${kind === "week"} onClick=${() => { setKind("week"); setCopied(false); }}>Laatste 7 dagen<//>
+    </div>
+    <div class="coachbox">${text}</div>
+    <div style=${{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+      <${DS.Button} onClick=${async () => setCopied(await copyText(text))}>${copied ? "Gekopieerd" : "Kopiëren"}<//>
+    </div>
+  </div>`;
+}
+
+function Left({ label, value, unit }) {
+  return html`<div>
+    <div style=${cap}>${label}</div>
+    <div style=${{ fontSize: "var(--title-size)", lineHeight: "var(--title-line)", fontWeight: 800 }}>${num(Math.abs(Math.round(value)))} ${unit}</div>
+    ${value < 0 && html`<div style=${{ fontSize: "var(--delta-size)", fontWeight: 700 }}>boven doel</div>`}
+  </div>`;
+}
+
+export function Food({ ctx }) {
+  const today = todayISO();
+  const [date, setDate] = useState(() => store.getMeta("foodDate") && store.getMeta("foodDateSetOn") === today ? store.getMeta("foodDate") : today);
+  const go = (n) => { const d = shiftDay(date, n); setDate(d); store.setMeta("foodDate", d); store.setMeta("foodDateSetOn", today); };
+  const g = goals();
+  const t = dayTotals(date);
+  const left = { kcal: g.kcal - t.kcal, protein: g.protein - t.protein, fat: g.fat - t.fat, carbs: g.carbs - t.carbs };
+  const { rel, date: dl } = dayLabel(date, today);
+
+  return html`<div class="page">
+    <div class="title">Eten</div>
+    <div class="row" style=${{ gap: 4, marginTop: 16 }}>
+      <button type="button" class="iconbtn" aria-label="Vorige dag" onClick=${() => go(-1)}><span style=${{ display: "grid", transform: "rotate(90deg)" }}>${Icon("chevron-down", 20)}</span></button>
+      <button type="button" class="plainbtn flex1" style=${{ textAlign: "center", minHeight: 44 }} onClick=${() => { setDate(today); store.setMeta("foodDate", null); }}>
+        <span style=${{ fontSize: "var(--body-sm-size)", fontWeight: 800 }}>${rel}</span><span class="sub"> · ${dl}</span>
+      </button>
+      <button type="button" class="iconbtn" aria-label="Volgende dag" onClick=${() => go(1)}><span style=${{ display: "grid", transform: "rotate(-90deg)" }}>${Icon("chevron-down", 20)}</span></button>
+    </div>
+
+    <div style=${{ marginTop: 8, background: "var(--accent-mint)", borderRadius: "var(--radius-lg)", padding: "18px 16px", color: "var(--accent-mint-ink)" }}>
+      <div style=${cap}>${left.kcal < 0 ? "Boven je dagdoel" : "Nog over"}</div>
+      <div style=${{ fontSize: "var(--display-lg-size)", lineHeight: "var(--display-lg-line)", fontWeight: 800, marginTop: 6 }}>${num(Math.abs(Math.round(left.kcal)))}<span style=${{ fontSize: "var(--title-size)", fontWeight: 800 }}> kcal</span></div>
+      <div style=${{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginTop: 16 }}>
+        <${Left} label="Eiwit" value=${left.protein} unit="g" />
+        <${Left} label="Vet" value=${left.fat} unit="g" />
+        <${Left} label="Koolhydraten" value=${left.carbs} unit="g" />
+      </div>
+    </div>
+
+    <div style=${{ marginTop: 24 }}>
+      ${MEALS.map((m) => {
+        const e = entry(date, m.key);
+        return html`<${DS.MealBlock} key=${m.key} meal=${m.label} accent=${m.accent} note=${e.note || ""} recipe=${e.recipe || undefined}
+          kcal=${fmt(e.kcal)} protein=${fmt(e.protein)} fat=${fmt(e.fat)} carbs=${fmt(e.carbs)}
+          onEdit=${() => ctx.sheet(html`<${MealSheet} ctx=${ctx} date=${date} meal=${m.key} />`)} />`;
+      })}
+    </div>
+
+    <div class="row" style=${{ borderTop: "1px solid var(--border)", paddingTop: 14, gap: 10 }}>
+      <div class="flex1 sub">Zet je notities als tekst klaar voor je coach.</div>
+      <${DS.Button} size="sm" onClick=${() => ctx.sheet(html`<${CoachSheet} date=${date} />`)}>Kopieer voor coach<//>
+    </div>
+    <div class="sub" style=${{ marginTop: 16 }}>Dagdoel ${num(g.kcal)} kcal · ${g.protein} g eiwit · ${g.fat} g vet · ${g.carbs} g koolhydraten. Aanpassen in Instellingen.</div>
+  </div>`;
+}

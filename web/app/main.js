@@ -12,11 +12,11 @@ import { TemplateEditor } from "./screens/template.js";
 import { Library } from "./screens/library.js";
 import { ExerciseDetail } from "./screens/exercise.js";
 import { Settings } from "./screens/settings.js";
-import { Later } from "./screens/later.js";
 import { Progress } from "./screens/progress.js";
 import { Recap } from "./screens/recap.js";
 import { HevyImport } from "./screens/import.js";
 import { Measure, MeasureDetail, MeasureEntry, MeasureImport } from "./screens/measure.js";
+import { Food } from "./screens/food.js";
 
 const TAB_SCREENS = new Set(["home", "progress", "measure", "food"]);
 
@@ -81,7 +81,7 @@ function App() {
     measureDetail: MeasureDetail,
     measureEntry: MeasureEntry,
     measureImport: MeasureImport,
-    food: Later,
+    food: Food,
     workout: Workout,
     summary: Summary,
     template: TemplateEditor,

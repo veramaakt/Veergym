@@ -46,6 +46,6 @@ Meld Vera daarna wat er gepusht is en dat ze `start.command` moet herstarten.
 - Voortgangsfoto's (idee Vera, 23-9): foto's per meetmoment (voor/zij/achter) met een doorzichtige "spookfoto" van de
   vorige keer over de camera, zodat de pose gelijk blijft; vergelijken naast elkaar. Nog niet gebouwd: wacht op Vera's keuze
   wanneer en waar de foto's bewaard worden (alleen telefoon of ook op haar Mac). Nooit in git, demo of Claude-context.
-- Strength level-balk (beginner → elite, zoals Hevy) op oefening/voortgang: bouwen ná Metingen, want hij heeft lichaamsgewicht nodig (plus leeftijd, geslacht).
+- Strength level-balk: bewust overgeslagen (23-9). Hevy gebruikt eigen gebruikersdata; strengthlevel.com-tabellen zijn niet vrij herbruikbaar; open vuistregels dekken geen machines. Mogelijk later: link per oefening naar strengthlevel.com.
 - Kleuren: krachtgrafieken krijgen een kleur per spiergroep (`groupColor` in `web/app/stats.js`, tokens `--g-*` in `app.css`).
 - Spierfiguur: `web/vendor/muscle-female.js` (react-muscle-highlighter, MIT), koppeling in `web/app/muscles.js`.

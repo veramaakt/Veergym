@@ -1,6 +1,7 @@
 import { html, DS, DEMO, useState, Switch } from "../ui.js";
 import { fields as measureFields } from "../measure.js";
 import { seedDemo } from "../demo.js";
+import { MACROS, goals as foodGoals } from "../food.js";
 import * as store from "../store.js";
 import { time } from "../logic.js";
 
@@ -55,6 +56,18 @@ export function Settings({ ctx }) {
         <div class="chips">${REST_OPTIONS.map((v) => html`<${DS.Chip} key=${v} selected=${restDefault === v} onClick=${() => store.put("settings", "settings", { ...settings, restDefault: v })}>${time(v)}<//>`)}</div>
         <div class="sub" style=${{ marginTop: 8 }}>Per oefening kun je een eigen rusttijd kiezen.</div>
         <${Row} title="Oefeningen" sub=${`${ctx.exercises.length} in je bibliotheek`}><${DS.Chip} onClick=${() => ctx.go("library", { mode: "browse" })}>Bekijken<//><//>
+      </div>
+
+      <div class="section">
+        <div class="title">Dagdoelen eten</div>
+        ${MACROS.map((m) => html`<div key=${m.key} class="row" style=${{ gap: 12, padding: "6px 0" }}>
+          <div class="flex1" style=${{ fontSize: "var(--body-md-size)", fontWeight: 700 }}>${m.key === "kcal" ? "Energie" : m.label}</div>
+          <input inputMode="numeric" defaultValue=${foodGoals()[m.key]} onChange=${(e) => {
+            const v = Number(String(e.target.value).replace(",", "."));
+            if (!Number.isNaN(v) && v > 0) store.put("settings", "settings", { ...settings, foodGoals: { ...foodGoals(), [m.key]: v } });
+          }} style=${{ width: 88, height: 44, border: "none", borderRadius: "var(--radius-sm)", background: "var(--surface-tint)", fontFamily: "inherit", fontSize: "var(--body-md-size)", fontWeight: 800, textAlign: "center", outline: "none", color: "var(--ink)" }} />
+          <div style=${{ width: 34, fontSize: "var(--body-sm-size)", fontWeight: 700, color: "var(--ink-soft)" }}>${m.unit}</div>
+        </div>`)}
       </div>
 
       <div class="section">
