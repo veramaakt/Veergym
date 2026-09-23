@@ -1,4 +1,4 @@
-import { html, DS, useState, useEffect } from "../ui.js";
+import { html, DS, useState, useEffect, Icon } from "../ui.js";
 import * as store from "../store.js";
 import { num, time, exMeta, exerciseHistory, bests, workoutPrs, dateNum, dateShort, TYPES, GROUPS, hasValue } from "../logic.js";
 import { METRICS, METRIC_HELP, sessionValue, formatMetric, lowerIsBetter, groupColor } from "../stats.js";
@@ -55,6 +55,7 @@ export function ExerciseDetail({ ctx, params }) {
   const ex = store.get(params.id);
   const [note, setNote] = useState(ex?.note || "");
   const [tab, setTab] = useState("overzicht");
+  const [noteOpen, setNoteOpen] = useState(false);
   const [allHist, setAllHist] = useState(false);
   const [metrics, setMetrics] = useState(() => store.getMeta("progressMetrics", {}));
   useEffect(() => { if (!ex) ctx.back(); }, [ex]);
@@ -85,7 +86,22 @@ export function ExerciseDetail({ ctx, params }) {
     </div>
     <div class="scroll">
       ${tab === "overzicht" ? html`<div>
-        <div class="section first">
+        <div class="section first" style=${{ paddingTop: 4 }}>
+          <button type="button" class="plainbtn" onClick=${() => { if (noteOpen) saveNote(); setNoteOpen(!noteOpen); }}
+            style=${{ width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style=${{ display: "grid", placeItems: "center", color: "var(--ink-soft)", transform: noteOpen ? "none" : "rotate(-90deg)", transition: "transform .15s ease" }}>${Icon("chevron-down", 18)}</span>
+            <span class="flex1" style=${{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+              <span class="body">Vaste notitie</span>
+              ${!noteOpen && html`<span class="sub" style=${{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>${note.trim() || "Nog leeg · stoelstand, repbereik, aanwijzingen"}</span>`}
+            </span>
+          </button>
+          ${noteOpen && html`<div>
+            <div class="sub">Staat bij elke sessie boven je sets</div>
+            <textarea class="field" style=${{ marginTop: 8, minHeight: 72 }} value=${note} onInput=${(e) => setNote(e.target.value)} onBlur=${saveNote} placeholder="Stoelstand, repbereik, aanwijzingen" autoFocus></textarea>
+          </div>`}
+        </div>
+
+        <div class="section">
           <${MuscleFigure} ex=${ex} />
           <div class="caption" style=${{ margin: "16px 0 8px" }}>Spiergroep in je overzichten</div>
           <div class="chips">${GROUPS.map((g) => html`<${DS.Chip} key=${g} selected=${ex.group === g} onClick=${() => store.update(ex.id, { group: g })}>${g}<//>`)}</div>
@@ -98,12 +114,6 @@ export function ExerciseDetail({ ctx, params }) {
           <${DS.LineChart} values=${chrono.map((p) => p.v)} labels=${chrono.map((p) => dateNum(p.at))} prIndex=${bi === chrono.length - 1 ? null : bi} color=${color} height=${140} formatValue=${fmt} />
           <div style=${{ marginTop: 18 }}><${DS.MetricSelector} options=${options} value=${metric} onChange=${setMetric} /></div>
         </div>`}
-
-        <div class="section">
-          <div class="title">Vaste notitie</div>
-          <div class="sub">Staat bij elke sessie boven je sets</div>
-          <textarea class="field" style=${{ marginTop: 10, minHeight: 72 }} value=${note} onInput=${(e) => setNote(e.target.value)} onBlur=${saveNote} placeholder="Stoelstand, repbereik, aanwijzingen"></textarea>
-        </div>
 
         <${Records} type=${type} b=${b} />
 
