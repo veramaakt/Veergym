@@ -9,6 +9,15 @@ import {
 const cm = (v) => (v === null || v === undefined ? null : num(v));
 const signed = (d, unit) => (d === null || d === 0 ? "" : `${num(Math.abs(d))}${unit ? " " + unit : ""}`);
 
+/** Kop van een inklapbaar blok: icoon, titel, subregel en een pijltje. */
+function FoldHeader({ icon, fill, color, title, sub, open, onToggle }) {
+  return html`<button type="button" class="plainbtn" onClick=${onToggle} aria-expanded=${open} style=${{ width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 10 }}>
+    <${DS.IconBadge} icon=${icon} size=${30} fill=${fill} color=${color} />
+    <div class="flex1"><div class="body">${title}</div><div class="sub">${sub}</div></div>
+    <span style=${{ display: "grid", placeItems: "center", color: "var(--ink-soft)", transform: open ? "rotate(180deg)" : "none", transition: "transform .15s ease" }}>${Icon("chevron-down", 18)}</span>
+  </button>`;
+}
+
 function DueRow({ ctx, plan, any }) {
   const title = plan.last === null ? (any ? "Nog geen omtrekken gemeten" : "Nog geen metingen") : plan.missed ? "Meetmoment gemist" : plan.due ? "Meetmoment vandaag" : `Volgende meetmoment: ${fmtDay(plan.next)}`;
   const sub = plan.last === null ? (any ? "Vul je eerste meting in, of importeer je sheet" : "Vul je eerste meting in, of importeer je sheet of weegschaal") : `Laatste meting ${fmtDate(plan.last)}`;
@@ -24,6 +33,14 @@ export function Measure({ ctx }) {
   const w = series(list, "weight");
   const ws = sinceStart(w);
   const win = weekWindow(w);
+  const [folds, setFolds] = useState(() => store.getMeta("measureFolds", {}));
+  const fold = (k) => { const x = { ...folds, [k]: !folds[k] }; setFolds(x); store.setMeta("measureFolds", x); };
+  const lastOf = (key) => sinceStart(series(list, key));
+  const bodyRows = BODY_FIELDS.map((f) => ({ f, s: lastOf("body." + f.key) })).filter((x) => x.s.value !== null);
+  // Ingeklapt een korte samenvatting, zodat je ook dicht iets ziet.
+  const circSummary = ["taille", "buik", "heupen", "billen"].map((k) => ({ k, s: lastOf(k) })).filter((x) => x.s.value !== null)
+    .map(({ k, s }) => `${describe(k).label.split(" /")[0]} ${num(s.value)}`).join(" · ");
+  const bodySummary = bodyRows.filter(({ f }) => f.key === "fat_pct" || f.key === "muscle_kg").map(({ f, s }) => `${f.key === "fat_pct" ? "Vet" : "Spieren"} ${num(s.value)} ${f.unit}`).join(" · ");
 
   return html`<div class="page">
     <div class="row">
@@ -51,11 +68,9 @@ export function Measure({ ctx }) {
       </div>
 
       <div class="section" style=${{ marginTop: 20 }}>
-        <div class="row" style=${{ gap: 10 }}>
-          <${DS.IconBadge} icon="bars" size=${30} fill="var(--accent-lavender)" color="#211a12" />
-          <div><div class="body">Omtrekken</div><div class="sub">${plan.last ? `Laatste meting ${fmtDate(plan.last)} · ` : ""}verschil t.o.v. start</div></div>
-        </div>
-        ${plan.last === null ? html`<div class="sub" style=${{ marginTop: 10 }}>Nog geen omtrekken. Vul ze in met + of importeer je Google Sheet.</div>` : html`<div style=${{ marginTop: 8 }}>
+        <${FoldHeader} icon="bars" fill="var(--accent-lavender)" color="#211a12" title="Omtrekken" open=${!!folds.circ} onToggle=${() => fold("circ")}
+          sub=${plan.last === null ? "Nog geen omtrekken" : folds.circ ? `Laatste meting ${fmtDate(plan.last)} · verschil t.o.v. start` : `${circSummary} cm`} />
+        ${!folds.circ ? null : plan.last === null ? html`<div class="sub" style=${{ marginTop: 10 }}>Nog geen omtrekken. Vul ze in met + of importeer je Google Sheet.</div>` : html`<div style=${{ marginTop: 8 }}>
           ${fields().map((f, i) => {
             const s = sinceStart(series(list, f.key));
             return html`<${DS.MeasurementRow} key=${f.key} first=${i === 0} label=${f.label} value=${cm(s.value)}
@@ -65,16 +80,14 @@ export function Measure({ ctx }) {
       </div>
     </div>`}
 
-    ${list.some((m) => m.body && Object.keys(m.body).length) && html`<div class="section" style=${{ marginTop: 20 }}>
-      <div class="row" style=${{ gap: 10 }}>
-        <${DS.IconBadge} icon="radar" size=${30} fill="var(--accent-mint)" color="var(--accent-mint-ink)" />
-        <div><div class="body">Lichaamssamenstelling</div><div class="sub">Van je weegschaal · verschil t.o.v. eerste weging</div></div>
-      </div>
-      <div style=${{ marginTop: 8 }}>
-        ${BODY_FIELDS.map((f) => ({ f, s: sinceStart(series(list, "body." + f.key)) })).filter((x) => x.s.value !== null).map(({ f, s: st }, i) => html`<${DS.MeasurementRow}
+    ${bodyRows.length > 0 && html`<div class="section" style=${{ marginTop: 20 }}>
+      <${FoldHeader} icon="radar" fill="var(--accent-mint)" color="var(--accent-mint-ink)" title="Lichaamssamenstelling" open=${!!folds.body} onToggle=${() => fold("body")}
+        sub=${folds.body ? "Van je weegschaal · verschil t.o.v. eerste weging" : bodySummary} />
+      ${folds.body && html`<div style=${{ marginTop: 8 }}>
+        ${bodyRows.map(({ f, s: st }, i) => html`<${DS.MeasurementRow}
           key=${f.key} first=${i === 0} label=${f.label} value=${num(st.value)} unit=${f.unit}
           sinceStart=${signed(st.delta, f.unit)} direction=${st.direction} onClick=${() => ctx.go("measureDetail", { key: "body." + f.key })} />`)}
-      </div>
+      </div>`}
     </div>`}
 
     <div class="section" style=${{ marginTop: 20 }}>
