@@ -1,7 +1,7 @@
 import { html, DS, DEMO, useState, Switch } from "../ui.js";
 import { fields as measureFields } from "../measure.js";
 import { seedDemo } from "../demo.js";
-import { MACROS, goals as foodGoals } from "../food.js";
+import { MACROS, goals as foodGoals, DEFAULT_CONTEXT } from "../food.js";
 import * as store from "../store.js";
 import { time } from "../logic.js";
 
@@ -68,6 +68,10 @@ export function Settings({ ctx }) {
           }} style=${{ width: 88, height: 44, border: "none", borderRadius: "var(--radius-sm)", background: "var(--surface-tint)", fontFamily: "inherit", fontSize: "var(--body-md-size)", fontWeight: 800, textAlign: "center", outline: "none", color: "var(--ink)" }} />
           <div style=${{ width: 34, fontSize: "var(--body-sm-size)", fontWeight: 700, color: "var(--ink-soft)" }}>${m.unit}</div>
         </div>`)}
+        <div class="caption" style=${{ margin: "14px 0 6px" }}>Wat Claude over je eten moet weten</div>
+        <textarea class="field" style=${{ minHeight: 64 }} defaultValue=${settings.foodContext ?? DEFAULT_CONTEXT}
+          onBlur=${(e) => store.put("settings", "settings", { ...settings, foodContext: e.target.value })} placeholder="Bijv. vegetarisch, standaardontbijt, merken die je vaak gebruikt"></textarea>
+        <div class="sub" style=${{ marginTop: 6 }}>Gaat mee met "Schat macro's", samen met je maaltijdnotitie. Schatten vraagt een Claude API-sleutel in .env.</div>
       </div>
 
       <div class="section">

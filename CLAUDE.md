@@ -24,6 +24,11 @@ Persoonlijke fitness-app (zie `Aangeleverd/vision-brief-fitness-app.md`), design
   om te testen, maar komt nooit in git, in tests of in `web/`.
 - In htm: gebruik `autoFocus`/`inputMode` (React-casing) en `<${Fragment}>` i.p.v. `<>`.
 
+## Claude API
+"Schat macro's" (Eten) loopt via `POST /api/food/estimate` in `veergym/nutrition.py`: Anthropic Python-SDK,
+`messages.parse` met een Pydantic-model, model `claude-sonnet-5` (Vera's keuze uit de brief; te wijzigen via
+CLAUDE_MODEL). Sleutel alleen in `.env` van de app-map (ANTHROPIC_API_KEY). Tests gebruiken een nep-client.
+
 ## Demo voor feedback
 `python tools/build_demo.py` bouwt `build/demo/` (gitignored): de app met `window.VEERGYM_DEMO`, zonder server/inlog,
 met verzonnen voorbeelddata. Gepubliceerd als privé-Artifact https://claude.ai/artifact/StRyRvkWDukTUsbgaYTK8j

@@ -18,6 +18,8 @@ export const MACROS = [
   { key: "carbs", label: "Koolhydraten", unit: "g" },
 ];
 export const DEFAULT_GOALS = { kcal: 1800, protein: 130, fat: 60, carbs: 185 };
+// Vaste context die met "Schat macro's" meegaat naar Claude (aan te passen in Instellingen).
+export const DEFAULT_CONTEXT = "Ik eet vegetarisch.";
 
 const DAY = 86400000;
 const DAYS = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];

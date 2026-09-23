@@ -1,8 +1,8 @@
-import { html, DS, useState, Icon } from "../ui.js";
+import { html, DS, DEMO, useState, Icon } from "../ui.js";
 import * as store from "../store.js";
 import { num } from "../logic.js";
 import { todayISO } from "../measure.js";
-import { MEALS, MACROS, goals, shiftDay, dayLabel, entry, saveEntry, dayTotals, dayText, weekText } from "../food.js";
+import { MEALS, MACROS, goals, shiftDay, dayLabel, entry, saveEntry, dayTotals, dayText, weekText, DEFAULT_CONTEXT } from "../food.js";
 import { copyText } from "../clipboard.js";
 
 const cap = { fontSize: "var(--caption-size)", lineHeight: "var(--caption-line)", fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase" };
@@ -15,6 +15,25 @@ function MealSheet({ ctx, date, meal }) {
   const e = entry(date, meal);
   const [d, setD] = useState({ note: e.note || "", recipe: e.recipe || "", ...Object.fromEntries(MACROS.map((x) => [x.key, show(e[x.key])])) });
   const save = () => { saveEntry(date, meal, d); ctx.closeSheet(); };
+  const [est, setEst] = useState({ busy: false, err: "", note: "" });
+  const estimate = async () => {
+    if (!d.note.trim() || est.busy) return;
+    if (DEMO) return setEst({ busy: false, err: "In de demo kan Claude niet schatten; in je echte app wel.", note: "" });
+    setEst({ busy: true, err: "", note: "" });
+    try {
+      const r = await fetch("api/food/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + store.getMeta("token") },
+        body: JSON.stringify({ note: d.note, context: (store.get("settings") || {}).foodContext ?? DEFAULT_CONTEXT }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(body.detail || "Schatten lukte niet (" + r.status + ")");
+      setD((x) => ({ ...x, kcal: num(body.kcal), protein: num(body.protein), fat: num(body.fat), carbs: num(body.carbs) }));
+      setEst({ busy: false, err: "", note: body.assumptions || "" });
+    } catch (x) {
+      setEst({ busy: false, err: navigator.onLine ? x.message : "Schatten kan alleen online. Je notitie wordt wel bewaard.", note: "" });
+    }
+  };
   return html`<div>
     <div class="title">${m.label}</div>
     <textarea class="field" style=${{ marginTop: 12 }} value=${d.note} onInput=${(ev) => setD({ ...d, note: ev.target.value })} placeholder="Wat at je? In gewone taal." autoFocus></textarea>
@@ -26,9 +45,11 @@ function MealSheet({ ctx, date, meal }) {
       </div>`)}
     </div>
     <div class="row" style=${{ gap: 10, marginTop: 12 }}>
-      <div class="flex1 sub">Macro's vul je nu zelf in, bijvoorbeeld wat je coach je teruggeeft.</div>
-      <span class="tag">Schatten: fase 2</span>
+      <div class="flex1 sub">${est.busy ? "Claude schat je maaltijd…" : d.note.trim() ? "Laat Claude de macro's schatten; jij controleert en past aan." : "Schrijf eerst wat je at, dan kan Claude schatten."}</div>
+      <${DS.Chip} onClick=${estimate} disabled=${est.busy || !d.note.trim()} style=${{ opacity: est.busy || !d.note.trim() ? 0.4 : 1 }}>${est.busy ? "Bezig…" : "Schat macro's"}<//>
     </div>
+    ${est.err && html`<div class="error">${est.err}</div>`}
+    ${est.note && html`<div class="sub" style=${{ marginTop: 8, fontStyle: "italic" }}>Schatting van Claude: ${est.note}</div>`}
     <div style=${{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}><${DS.Button} onClick=${save}>Opslaan<//></div>
   </div>`;
 }

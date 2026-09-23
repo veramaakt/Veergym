@@ -11,7 +11,7 @@ from sqlmodel import Session
 from . import __version__
 import base64
 
-from . import feelfit, hevy
+from . import feelfit, hevy, nutrition
 from .auth import check_password, make_token, require_auth
 from .config import WEB_DIR, get_settings
 from .db import Record, get_session, next_seq, select
@@ -36,7 +36,8 @@ class LoginRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "version": __version__, "password_set": bool(get_settings().app_password)}
+    return {"ok": True, "version": __version__, "password_set": bool(get_settings().app_password),
+            "estimate_available": nutrition.available()}
 
 
 @app.post("/api/login")
@@ -133,6 +134,20 @@ def feelfit_import(req: FeelfitRequest):
         return feelfit.parse(files)
     except (feelfit.FeelfitError, ValueError) as e:
         raise HTTPException(400, str(e))
+
+
+class EstimateRequest(BaseModel):
+    note: str
+    context: str = ""
+
+
+@app.post("/api/food/estimate", dependencies=[Depends(require_auth)])
+def food_estimate(req: EstimateRequest):
+    """Schat de macro's van één maaltijd met Claude. De sleutel blijft op de server."""
+    try:
+        return nutrition.estimate(req.note, req.context).model_dump()
+    except nutrition.EstimateError as e:
+        raise HTTPException(e.status, str(e))
 
 
 @app.get("/sw.js", include_in_schema=False)

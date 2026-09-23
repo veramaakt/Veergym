@@ -82,6 +82,19 @@ en een wachtwoord. Gebruik als wachtwoord een **personal access token** (GitHub 
 Developer settings > Personal access tokens > Fine-grained, met "Contents: Read and write" op de
 repository Veergym). macOS onthoudt hem daarna in de sleutelhanger.
 
+## Macro's laten schatten door Claude (optioneel)
+
+Op het Eten-scherm kan de knop "Schat macro's" je maaltijdnotitie naar Claude sturen en kcal,
+eiwit, vet en koolhydraten voorstellen. Daarvoor heb je een eigen API-sleutel nodig (los van je
+Claude-abonnement):
+
+1. Maak een account op https://console.anthropic.com, zet er wat tegoed op (een paar euro is
+   maanden genoeg) en maak onder API Keys een sleutel aan.
+2. Zet hem in `Veergym - app/.env` achter `ANTHROPIC_API_KEY=` en herstart `start.command`.
+
+Alleen je maaltijdnotitie en de tekst bij Instellingen > "Wat Claude over je eten moet weten"
+worden meegestuurd. De sleutel blijft op je Mac; de app op je telefoon ziet hem nooit.
+
 ## Je data
 
 - Alles staat in `Veergym - app/data/veergym.db` (SQLite) en op elk apparaat in de browser.
