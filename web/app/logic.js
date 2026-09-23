@@ -210,17 +210,25 @@ export function workoutPrs(workout, workouts, exById) {
     if (!earlier.length) continue; // eerste keer deze oefening: nog geen records
     let best = null;
     const labels = new Set();
+    const hits = []; // per set: welke records die set haalde
     for (const s of it.sets || []) {
       const p = prsFor(type, s, earlier);
       if (p.length) {
         p.forEach((l) => labels.add(l));
         best = s;
+        hits.push({ set: s, labels: p });
       }
       earlier.push(s);
     }
-    if (best) out.push({ exercise: it.exercise, set: best, labels: [...labels] });
+    if (best) out.push({ exercise: it.exercise, set: best, labels: [...labels], hits });
   }
   return out;
+}
+
+/** Kort label voor een record, zoals Hevy: "Gewicht", "1RM", "Reps". */
+export function prTag(label) {
+  if (label.startsWith("meeste reps")) return "Reps";
+  return { "zwaarste gewicht": "Gewicht", "geschat 1RM": "1RM", "minste assist": "Assist", "langste tijd": "Tijd", "verste afstand": "Afstand" }[label] || label;
 }
 
 // ---------- tekst voor je coach ----------

@@ -1,5 +1,5 @@
 import { html, DS, useMemo, Icon } from "../ui.js";
-import { kg, fmtSet } from "../logic.js";
+import { kg, fmtSet, prTag } from "../logic.js";
 import { monthRecap, shiftMonth, MONTHS_LONG, RADAR_GROUPS } from "../stats.js";
 
 function delta(cur, prev, prevLabel, pct = false) {
@@ -8,11 +8,6 @@ function delta(cur, prev, prevLabel, pct = false) {
   return { dir: d >= 0 ? "up" : "down", text: `${Math.abs(d)}${pct ? "%" : ""} vs ${prevLabel}` };
 }
 
-// Korte labels voor de tags bij een record.
-function tag(label) {
-  if (label.startsWith("meeste reps")) return "Reps";
-  return { "zwaarste gewicht": "Gewicht", "geschat 1RM": "1RM", "minste assist": "Assist", "langste tijd": "Tijd", "verste afstand": "Afstand" }[label] || label;
-}
 
 export function Recap({ ctx, params }) {
   const month = { y: params.y, m: params.m };
@@ -79,7 +74,7 @@ export function Recap({ ctx, params }) {
       ${r.records.length > 0 && html`<div class="section" style=${{ marginTop: 20, paddingTop: 16 }}>
         ${head("trend", "var(--accent-orange)", "var(--accent-orange-ink)", "Personal records")}
         <div style=${{ marginTop: 8 }}>${r.records.map((p, i) => html`<button type="button" key=${p.exercise} class="plainbtn" style=${{ width: "100%" }} onClick=${() => ctx.go("exercise", { id: p.exercise })}>
-          <${DS.ListRow} first=${i === 0} name=${ctx.exById[p.exercise]?.name} tags=${[...new Set(p.labels.map(tag))]} value=${fmtSet(ctx.exById[p.exercise]?.type, p.set, true)} />
+          <${DS.ListRow} first=${i === 0} name=${ctx.exById[p.exercise]?.name} tags=${[...new Set(p.labels.map(prTag))]} value=${fmtSet(ctx.exById[p.exercise]?.type, p.set, true)} />
         </button>`)}</div>
       </div>`}
 

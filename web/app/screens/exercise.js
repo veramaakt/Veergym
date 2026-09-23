@@ -1,6 +1,6 @@
 import { html, DS, useState, useEffect, Icon } from "../ui.js";
 import * as store from "../store.js";
-import { num, time, exMeta, exerciseHistory, bests, workoutPrs, dateNum, dateShort, TYPES, hasValue } from "../logic.js";
+import { num, time, exMeta, exerciseHistory, bests, workoutPrs, dateNum, dateShort, TYPES, hasValue, prTag } from "../logic.js";
 import { METRICS, METRIC_HELP, sessionValue, formatMetric, lowerIsBetter, groupColor } from "../stats.js";
 import { MuscleFigure } from "../muscles.js";
 
@@ -32,23 +32,26 @@ function SessionBlock({ h, type, pr }) {
   return html`<div style=${{ borderTop: "1px solid var(--border)", padding: "12px 0 6px" }}>
     <div class="row" style=${{ gap: 8 }}>
       <div class="flex1">
-        <div class="body">${dateShort(h.workout.start)} ${new Date(h.workout.start).getFullYear()}</div>
-        <div class="sub">${h.workout.title}</div>
-        ${pr && html`<div class="sub" style=${{ color: "var(--accent-orange-fg)", fontWeight: 700 }}>Record: ${pr.labels.join(" en ")}</div>`}
+        <div class="body">${h.workout.title}</div>
+        <div class="sub">${dateShort(h.workout.start)} ${new Date(h.workout.start).getFullYear()}, ${new Date(h.workout.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</div>
       </div>
     </div>
     <div class="caption" style=${{ display: "flex", gap: 10, padding: "10px 10px 4px" }}>
       <span style=${{ width: 28, flex: "none" }}>Set</span>
       ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center" }}>${type === "assist" && f.k === "w" ? "Assist" : f.label}</span>`)}
-      <span style=${{ width: 30, flex: "none" }}></span>
     </div>
     ${h.sets.map((s, i) => {
       const normal = !s.type || s.type === "normal";
       if (normal) n++;
-      return html`<div key=${i} class="altrow" style=${{ padding: "6px 10px", background: i % 2 ? "transparent" : "var(--surface-tint)" }}>
-        <span style=${{ width: 28, flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 700, color: "var(--ink-soft)" }}>${normal ? n : html`<${DS.SetTypeBadge} type=${s.type} />`}</span>
-        ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center", fontSize: "var(--body-md-size)", fontWeight: 800 }}>${cell(f, s)}</span>`)}
-        <span style=${{ width: 30, flex: "none", textAlign: "right" }}>${pr && pr.set === s && html`<span class="pr-badge">PR</span>`}</span>
+      const hit = pr?.hits?.find((x) => x.set === s);
+      return html`<div key=${i} style=${{ padding: "6px 10px", borderRadius: "var(--radius-md)", background: i % 2 ? "transparent" : "var(--surface-tint)" }}>
+        <div class="row" style=${{ gap: 10 }}>
+          <span style=${{ width: 28, flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 700, color: "var(--ink-soft)" }}>${normal ? n : html`<${DS.SetTypeBadge} type=${s.type} />`}</span>
+          ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center", fontSize: "var(--body-md-size)", fontWeight: 800 }}>${cell(f, s)}</span>`)}
+        </div>
+        ${hit && html`<div style=${{ display: "flex", gap: 6, padding: "4px 0 2px 38px" }}>
+          ${[...new Set(hit.labels.map(prTag))].map((t) => html`<span key=${t} class="pr-badge" style=${{ display: "inline-flex", alignItems: "center", gap: 4 }}>${Icon("trend", 12)}${t}</span>`)}
+        </div>`}
       </div>`;
     })}
   </div>`;
