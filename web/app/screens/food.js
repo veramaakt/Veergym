@@ -87,13 +87,18 @@ export function Food({ ctx }) {
         <${Left} label="Koolhydraten" value=${left.carbs} unit="g" />
       </div>
     </div>
+    <div class="sub" style=${{ marginTop: 8 }}>Telt vanzelf mee zodra je bij een maaltijd macro's invult. Tik op een maaltijd om te beginnen.</div>
 
     <div style=${{ marginTop: 24 }}>
       ${MEALS.map((m) => {
         const e = entry(date, m.key);
-        return html`<${DS.MealBlock} key=${m.key} meal=${m.label} accent=${m.accent} note=${e.note || ""} recipe=${e.recipe || undefined}
-          kcal=${fmt(e.kcal)} protein=${fmt(e.protein)} fat=${fmt(e.fat)} carbs=${fmt(e.carbs)}
-          onEdit=${() => ctx.sheet(html`<${MealSheet} ctx=${ctx} date=${date} meal=${m.key} />`)} />`;
+        const open = () => ctx.sheet(html`<${MealSheet} ctx=${ctx} date=${date} meal=${m.key} />`);
+        // Het hele blok is aantikbaar (niet alleen het +-knopje); een tik op de receptlink opent de link.
+        return html`<div key=${m.key} class="meal-tap on-pastel-meal" role="button" tabIndex="0" aria-label=${"Bewerk " + m.label}
+          onClick=${(ev) => { if (!ev.target.closest("a")) open(); }} onKeyDown=${(ev) => { if (ev.key === "Enter") open(); }}>
+          <${DS.MealBlock} meal=${m.label} accent=${m.accent} note=${e.note || ""} recipe=${e.recipe || undefined}
+            kcal=${fmt(e.kcal)} protein=${fmt(e.protein)} fat=${fmt(e.fat)} carbs=${fmt(e.carbs)} />
+        </div>`;
       })}
     </div>
 
