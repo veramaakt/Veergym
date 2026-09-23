@@ -25,6 +25,7 @@ function Records({ type, b }) {
 
 /** Eén sessie als blok, zoals tijdens een workout: Set · Kg · Reps. */
 function SessionBlock({ h, type, pr }) {
+  // pr: { set, labels } uit workoutPrs, of null. Het label staat bij de set die het record zette.
   const fields = TYPES[type].fields;
   const cell = (f, s) => (!hasValue(s[f.k]) ? "–" : f.time ? time(s[f.k]) : num(s[f.k]));
   let n = 0;
@@ -33,12 +34,13 @@ function SessionBlock({ h, type, pr }) {
       <div class="flex1">
         <div class="body">${dateShort(h.workout.start)} ${new Date(h.workout.start).getFullYear()}</div>
         <div class="sub">${h.workout.title}</div>
+        ${pr && html`<div class="sub" style=${{ color: "var(--accent-orange-fg)", fontWeight: 700 }}>Record: ${pr.labels.join(" en ")}</div>`}
       </div>
-      ${pr && html`<span class="pr-badge">PR</span>`}
     </div>
     <div class="caption" style=${{ display: "flex", gap: 10, padding: "10px 10px 4px" }}>
       <span style=${{ width: 28, flex: "none" }}>Set</span>
       ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center" }}>${type === "assist" && f.k === "w" ? "Assist" : f.label}</span>`)}
+      <span style=${{ width: 30, flex: "none" }}></span>
     </div>
     ${h.sets.map((s, i) => {
       const normal = !s.type || s.type === "normal";
@@ -46,6 +48,7 @@ function SessionBlock({ h, type, pr }) {
       return html`<div key=${i} class="altrow" style=${{ padding: "6px 10px", background: i % 2 ? "transparent" : "var(--surface-tint)" }}>
         <span style=${{ width: 28, flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 700, color: "var(--ink-soft)" }}>${normal ? n : html`<${DS.SetTypeBadge} type=${s.type} />`}</span>
         ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center", fontSize: "var(--body-md-size)", fontWeight: 800 }}>${cell(f, s)}</span>`)}
+        <span style=${{ width: 30, flex: "none", textAlign: "right" }}>${pr && pr.set === s && html`<span class="pr-badge">PR</span>`}</span>
       </div>`;
     })}
   </div>`;
@@ -123,7 +126,7 @@ export function ExerciseDetail({ ctx, params }) {
       </div>` : html`<div>
         ${!hist.length && html`<${DS.EmptyState} icon="calendar" title="Nog geen geschiedenis" body="Na je eerste sessie staan je sets hier." />`}
         ${shown.map((h) => html`<${SessionBlock} key=${h.workout.id} h=${h} type=${type}
-          pr=${workoutPrs(h.workout, ctx.workouts, ctx.exById).some((p) => p.exercise === ex.id)} />`)}
+          pr=${workoutPrs(h.workout, ctx.workouts, ctx.exById).find((p) => p.exercise === ex.id) || null} />`)}
         ${hist.length > HIST_SHOWN && html`<div style=${{ marginTop: 12 }}>
           <${DS.Chip} onClick=${() => setAllHist(!allHist)}>${allHist ? "Minder tonen" : `Alle ${hist.length} sessies tonen`}<//>
         </div>`}
