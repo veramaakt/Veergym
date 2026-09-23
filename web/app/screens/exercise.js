@@ -1,6 +1,6 @@
 import { html, DS, useState, useEffect, Icon } from "../ui.js";
 import * as store from "../store.js";
-import { num, time, exMeta, exerciseHistory, bests, workoutPrs, dateNum, dateShort, TYPES, GROUPS, hasValue } from "../logic.js";
+import { num, time, exMeta, exerciseHistory, bests, workoutPrs, dateNum, dateShort, TYPES, hasValue } from "../logic.js";
 import { METRICS, METRIC_HELP, sessionValue, formatMetric, lowerIsBetter, groupColor } from "../stats.js";
 import { MuscleFigure } from "../muscles.js";
 
@@ -103,8 +103,6 @@ export function ExerciseDetail({ ctx, params }) {
 
         <div class="section">
           <${MuscleFigure} ex=${ex} />
-          <div class="caption" style=${{ margin: "16px 0 8px" }}>Spiergroep in je overzichten</div>
-          <div class="chips">${GROUPS.map((g) => html`<${DS.Chip} key=${g} selected=${ex.group === g} onClick=${() => store.update(ex.id, { group: g })}>${g}<//>`)}</div>
         </div>
 
         ${chrono.length >= 3 && html`<div class="section">
