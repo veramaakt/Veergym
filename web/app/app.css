@@ -67,8 +67,8 @@ textarea.field { height: auto; min-height: 96px; padding: 12px; resize: vertical
 .demo-bar { flex: none; text-align: center; padding: 6px 16px; background: var(--accent-citrus); color: var(--accent-citrus-ink); font-size: var(--body-sm-size); font-weight: 700; }
 
 /* Spierfiguur (app/muscles.js) */
-:root { --muscle-body: #f1e9de; --muscle-off: #ddd0bf; --muscle-line: #ffffff; --muscle-secondary: #d9cbff; }
-[data-theme="dark"] { --muscle-body: #2a231b; --muscle-off: #3a3127; --muscle-line: #17130f; --muscle-secondary: #5b4f7a; }
+:root { --muscle-body: #f1e9de; --muscle-off: #ddd0bf; --muscle-line: #ffffff; --muscle-secondary: var(--accent-mint); }
+[data-theme="dark"] { --muscle-body: #2a231b; --muscle-off: #3a3127; --muscle-line: #17130f; --muscle-secondary: #8cc978; }
 
 /* Kleur per spiergroep, voor de krachtgrafieken op Voortgang. */
 :root {
