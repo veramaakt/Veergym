@@ -1,6 +1,6 @@
 // Service worker: bewaart de app op je telefoon, zodat hij zonder bereik opent.
 // Verhoog VERSION na een update, dan haalt de app de nieuwe bestanden op.
-const VERSION = "veergym-v8";
+const VERSION = "veergym-v9";
 const SHELL = [
   "./",
   "index.html",
@@ -35,6 +35,7 @@ const SHELL = [
   "app/measure.js",
   "app/demo.js",
   "app/food.js",
+  "app/foodai.js",
   "app/screens/login.js",
   "app/screens/later.js",
   "app/screens/home.js",
@@ -49,6 +50,7 @@ const SHELL = [
   "app/screens/import.js",
   "app/screens/measure.js",
   "app/screens/food.js",
+  "app/screens/foodweek.js",
 ];
 
 self.addEventListener("install", (e) => {

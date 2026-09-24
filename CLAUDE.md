@@ -29,7 +29,8 @@ Persoonlijke fitness-app (zie `Aangeleverd/vision-brief-fitness-app.md`), design
 `messages.parse` met een Pydantic-model, model `claude-sonnet-5` (Vera's keuze uit de brief; te wijzigen via
 CLAUDE_MODEL). Sleutel alleen in `.env` van de app-map (ANTHROPIC_API_KEY). Tests gebruiken een nep-client.
 Eettips (`POST /api/food/suggest`, knop "Wat kan ik nog eten?") en het weekoverzicht op zondag (`POST /api/food/week`,
-bewaard als record `foodweek` met id `fw-<zondag>`, dus één aanroep per week) gebruiken dezelfde helper. Claude "leert" via
+bewaard als record `foodweek` met id `fw-<zondag>`, dus één aanroep per week; scherm `web/app/screens/foodweek.js`,
+route `foodweek`, in de stijl van het maandoverzicht; Claude-aanroepen in `web/app/foodai.js`) gebruiken dezelfde helper. Claude "leert" via
 een profiel dat de app meestuurt (`profile()` in `web/app/food.js`): maaltijdnotities van de laatste 4 weken met aantallen,
 de lijst "Graag & in huis" (`settings.foodPantry`) en duimpjes (`settings.foodLikes`/`foodDislikes`). Vera koos dit bewust (24-9);
 de brief zei eerst "alleen de maaltijdnotitie". Toon: geen oordeel. In de demo komen vaste voorbeeldantwoorden.

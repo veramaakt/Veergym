@@ -200,3 +200,28 @@ export function weekPlanText(sunday, review) {
     "Tips voor volgende week:", ...review.tips.map((t) => `- ${t.title}: ${t.detail}`), "",
     "Ideeën voor het maaltijdplan:", ...review.meal_ideas.map((m) => `- ${m}`)].join("\n");
 }
+
+/** Per dag van de week (ma t/m zo): totalen, voor de staafgrafiek. */
+export function weekDays(sunday) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = shiftDay(sunday, i - 6);
+    return { date, short: ["ma", "di", "wo", "do", "vr", "za", "zo"][i], ...dayTotals(date) };
+  });
+}
+
+/** Wat je deze week het vaakst at (zelfde notitie bij dezelfde maaltijd). */
+export function topMeals(sunday, n = 5) {
+  const count = new Map();
+  for (let i = 0; i < 7; i++) {
+    const date = shiftDay(sunday, i - 6);
+    for (const m of MEALS) {
+      const e = store.get(entryId(date, m.key));
+      const note = clean(e && e.note);
+      if (!note) continue;
+      const key = m.key + "|" + note;
+      count.set(key, (count.get(key) || 0) + 1);
+    }
+  }
+  return [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, n)
+    .map(([k, c]) => { const [meal, note] = k.split("|"); return { meal: MEALS.find((m) => m.key === meal), note, count: c }; });
+}

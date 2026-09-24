@@ -14,6 +14,7 @@ import { ExerciseDetail } from "./screens/exercise.js";
 import { Settings } from "./screens/settings.js";
 import { Progress } from "./screens/progress.js";
 import { Recap } from "./screens/recap.js";
+import { FoodWeek } from "./screens/foodweek.js";
 import { HevyImport } from "./screens/import.js";
 import { Measure, MeasureDetail, MeasureEntry, MeasureImport } from "./screens/measure.js";
 import { Food } from "./screens/food.js";
@@ -76,6 +77,7 @@ function App() {
     home: Home,
     progress: Progress,
     recap: Recap,
+    foodweek: FoodWeek,
     import: HevyImport,
     measure: Measure,
     measureDetail: MeasureDetail,
