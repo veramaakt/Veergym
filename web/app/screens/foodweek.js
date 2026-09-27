@@ -4,7 +4,8 @@ import { html, DS, useState, useEffect, Icon } from "../ui.js";
 import * as store from "../store.js";
 import { num } from "../logic.js";
 import { todayISO } from "../measure.js";
-import { goals, shiftDay, dayLabel, lastSunday, weekId, weekStats, weekDays, topMeals, weekPlanText } from "../food.js";
+import { goals, shiftDay, dayLabel, lastSunday, weekId, weekStats, weekDays, topMeals, weekPlanText, weekPrompt } from "../food.js";
+import { NoKeyHelp } from "./food.js";
 import { makeWeekReview } from "../foodai.js";
 import { copyText } from "../clipboard.js";
 
@@ -153,10 +154,17 @@ export function FoodWeek({ ctx, params }) {
             <${DS.Chip} onClick=${async () => setCopied(await copyText(weekPlanText(sunday, saved)))}>${copied ? "Gekopieerd" : "Kopieer voor maaltijdplan"}<//>
           </div>
         </div>` : html`<div>
-          <div class="sub" style=${{ marginTop: 10 }}>${state.busy ? "Claude maakt je weekoverzicht…" : "Claude kijkt naar je week en geeft tips en maaltijdideeën voor volgende week."}</div>
-          ${!state.busy && html`<div class="chips" style=${{ marginTop: 10, justifyContent: "flex-end" }}><${DS.Chip} onClick=${make}>Maak tips<//></div>`}
+          ${state.err
+            ? html`<${NoKeyHelp} err=${state.err} text=${() => weekPrompt(sunday)} what="je week en de vraag om tips" />`
+            : html`<div>
+              <div class="sub" style=${{ marginTop: 10 }}>${state.busy ? "Claude maakt je weekoverzicht…" : "Claude kijkt naar je week en geeft tips en maaltijdideeën voor volgende week."}</div>
+              ${!state.busy && html`<div class="chips" style=${{ marginTop: 10, justifyContent: "flex-end" }}>
+                <${DS.Chip} onClick=${async () => setCopied(await copyText(weekPrompt(sunday)))}>${copied ? "Gekopieerd" : "Kopieer voor chat"}<//>
+                <${DS.Chip} onClick=${make}>Maak tips<//>
+              </div>`}
+            </div>`}
         </div>`}
-        ${state.err && html`<div class="error">${state.err}</div>`}
+        ${saved && state.err && html`<div class="error">${state.err}</div>`}
       </div>
     </div>`}
   </div>`;

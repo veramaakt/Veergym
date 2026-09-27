@@ -3,7 +3,7 @@ import { ask, ensureWeekReview } from "../foodai.js";
 import * as store from "../store.js";
 import { num } from "../logic.js";
 import { todayISO } from "../measure.js";
-import { MEALS, MACROS, goals, shiftDay, dayLabel, entry, saveEntry, dayTotals, dayText, weekText, DEFAULT_CONTEXT,
+import { MEALS, MACROS, goals, shiftDay, dayLabel, entry, saveEntry, dayTotals, dayText, weekText, tipsPrompt, DEFAULT_CONTEXT,
   profile, todayLines, rateTip, tipRating, addToMeal, lastSunday, weekId, weekStats } from "../food.js";
 import { fromISO } from "../measure.js";
 import { copyText } from "../clipboard.js";
@@ -57,16 +57,18 @@ function MealSheet({ ctx, date, meal }) {
   </div>`;
 }
 
-function CoachSheet({ date }) {
-  const [kind, setKind] = useState("dag");
+function CoachSheet({ date, start = "dag" }) {
+  const [kind, setKind] = useState(start);
   const [copied, setCopied] = useState(false);
-  const text = kind === "dag" ? dayText(date) : weekText(date);
+  const text = kind === "dag" ? dayText(date) : kind === "tips" ? tipsPrompt(date) : weekText(date);
+  const pick = (k) => { setKind(k); setCopied(false); };
   return html`<div>
     <div class="title">Kopieer voor coach</div>
-    <div class="sub">Plak dit in je Claude-chat. Zet de geschatte macro's daarna terug in de maaltijden.</div>
+    <div class="sub">${kind === "tips" ? "Plak dit in je Claude-chat: je dag, wat er nog over is en wat je graag eet, met de vraag erbij." : "Plak dit in je Claude-chat. Zet de geschatte macro's daarna terug in de maaltijden."}</div>
     <div class="chips" style=${{ marginTop: 10 }}>
-      <${DS.Chip} selected=${kind === "dag"} onClick=${() => { setKind("dag"); setCopied(false); }}>Deze dag<//>
-      <${DS.Chip} selected=${kind === "week"} onClick=${() => { setKind("week"); setCopied(false); }}>Laatste 7 dagen<//>
+      <${DS.Chip} selected=${kind === "dag"} onClick=${() => pick("dag")}>Deze dag<//>
+      <${DS.Chip} selected=${kind === "week"} onClick=${() => pick("week")}>Laatste 7 dagen<//>
+      <${DS.Chip} selected=${kind === "tips"} onClick=${() => pick("tips")}>Vraag om tips<//>
     </div>
     <div class="coachbox">${text}</div>
     <div style=${{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
@@ -122,6 +124,18 @@ function TipCard({ tip, onAdd, added }) {
   </div>`;
 }
 
+/** Lukt Claude via de app niet (bijv. geen API-sleutel)? Dan kopiëren en in de chat vragen. */
+export function NoKeyHelp({ err, text, what }) {
+  const [copied, setCopied] = useState(false);
+  const noKey = /ANTHROPIC_API_KEY/.test(err);
+  return html`<div style=${{ marginTop: 10 }}>
+    <div class=${noKey ? "sub" : "error"}>${noKey ? `Zonder API-sleutel kan de app dit niet zelf vragen. Kopieer ${what} en plak het in je Claude-chat.` : err}</div>
+    <div class="chips" style=${{ marginTop: 10, justifyContent: "flex-end" }}>
+      <${DS.Chip} onClick=${async () => setCopied(await copyText(text()))}>${copied ? "Gekopieerd" : "Kopieer voor chat"}<//>
+    </div>
+  </div>`;
+}
+
 function SuggestSheet({ date, left }) {
   const [state, setState] = useState({ busy: true, err: "", data: null });
   const [meal, setMeal] = useState(() => (["snack", "diner", "extra"].find((k) => !entry(date, k).note) || "extra"));
@@ -137,7 +151,7 @@ function SuggestSheet({ date, left }) {
     <div class="title">Wat kan ik nog eten?</div>
     <div class="sub">Op basis van wat je nog over hebt en wat je vaak eet. Met Lekker en Liever niet leert Claude je smaak.</div>
     ${state.busy && html`<div class="sub" style=${{ marginTop: 14 }}>Claude zoekt iets dat bij je past…</div>`}
-    ${state.err && html`<div class="error">${state.err}</div>`}
+    ${state.err && html`<${NoKeyHelp} err=${state.err} text=${() => tipsPrompt(date)} what="je dag en de vraag om tips" />`}
     ${state.data && html`<div>
       ${state.data.note && html`<div class="sub" style=${{ marginTop: 10 }}>${state.data.note}</div>`}
       <div class="caption" style=${{ margin: "12px 0 6px" }}>Toevoegen aan</div>

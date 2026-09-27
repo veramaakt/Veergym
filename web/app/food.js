@@ -225,3 +225,41 @@ export function topMeals(sunday, n = 5) {
   return [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, n)
     .map(([k, c]) => { const [meal, note] = k.split("|"); return { meal: MEALS.find((m) => m.key === meal), note, count: c }; });
 }
+
+// ---------- tekst om in je Claude-chat te plakken (werkt zonder API-sleutel) ----------
+
+function profileText(max = 20) {
+  const p = profile();
+  const lines = [];
+  if (p.pantry.trim()) lines.push(`Wat ik graag eet en meestal in huis heb: ${clean(p.pantry)}`);
+  if (p.likes.length) lines.push(`Eerdere tips die ik lekker vond: ${p.likes.join("; ")}`);
+  if (p.dislikes.length) lines.push(`Liever niet: ${p.dislikes.join("; ")}`);
+  if (p.history.length) lines.push("Wat ik de laatste weken vaak at:\n" + p.history.slice(0, max).map((h) => `- ${h}`).join("\n"));
+  if (clean(p.context)) lines.push(`Over mij: ${clean(p.context)}`);
+  return lines.join("\n\n");
+}
+
+/** Vraag om eettips voor de rest van de dag. */
+export function tipsPrompt(date) {
+  const g = goals(), t = dayTotals(date);
+  const left = MACROS.map((m) => `${n(Math.max(0, g[m.key] - t[m.key]))} ${m.key === "kcal" ? "kcal" : "g " + m.label.toLowerCase()}`).join(", ");
+  return [
+    `Wat kan ik ${dayLabel(date).rel.toLowerCase() === "vandaag" ? "vandaag" : "op " + dayLabel(date).date} nog eten?`,
+    `Nog over van mijn dagdoel: ${left}.`,
+    dayText(date),
+    profileText(),
+    "Geef 2 of 3 concrete voorstellen met portie en geschatte kcal, eiwit, vet en koolhydraten, vooral voor wat er het meest over is. " +
+      "Baseer je op wat ik vaak eet en in huis heb, en zet de macro's zo neer dat ik ze in mijn app kan overnemen. Rustige toon, geen oordeel.",
+  ].filter(Boolean).join("\n\n");
+}
+
+/** Vraag om een weekoverzicht met tips en maaltijdideeën voor volgende week. */
+export function weekPrompt(sunday) {
+  return [
+    "Help me met mijn maaltijdplan voor volgende week. Dit at ik deze week:",
+    weekInput(sunday),
+    profileText(),
+    "Geef: 2 zinnen over wat opviel deze week, 2 of 3 tips voor volgende week (plannen, boodschappen, vooruit koken) " +
+      "en 4 tot 6 maaltijdideeën per maaltijd, zoveel mogelijk gebaseerd op wat ik graag eet. Rustige toon, geen oordeel.",
+  ].filter(Boolean).join("\n\n");
+}

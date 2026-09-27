@@ -103,6 +103,10 @@ weekoverzicht ook je maaltijdnotities van de laatste 4 weken, je lijst "Graag & 
 duimpjes en je dagdoelen. Plus altijd de tekst bij Instellingen > "Wat Claude over je eten moet
 weten". De sleutel blijft op je Mac; de app op je telefoon ziet hem nooit.
 
+**Zonder API-sleutel** kan het ook, via je gewone Claude-abonnement: bij Eten > "Kopieer voor coach" >
+"Vraag om tips", of "Kopieer voor chat" in het weekoverzicht, zet de app je dag of week met de vraag
+klaar om in je Claude-chat te plakken.
+
 ## Je data
 
 - Alles staat in `Veergym - app/data/veergym.db` (SQLite) en op elk apparaat in de browser.
