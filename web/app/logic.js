@@ -106,6 +106,25 @@ export function fmtSets(type, sets) {
   }).join(" · ");
 }
 
+// Onderdelen van een schema. Items zonder role horen bij "Training".
+export const ROLES = [
+  { id: "warmup", label: "Warming-up", add: "Warming-up toevoegen" },
+  { id: "main", label: "Training", add: "Oefening toevoegen" },
+  { id: "cooldown", label: "Cooling-down", add: "Cooling-down toevoegen" },
+];
+export const roleOf = (it) => (it && it.role) || "main";
+export const roleLabel = (it) => ROLES.find((r) => r.id === roleOf(it)).label;
+/** Warming-up eerst, cooling-down laatst; binnen een onderdeel blijft de volgorde gelijk. */
+export function sortByRole(items) {
+  const rank = { warmup: 0, main: 1, cooldown: 2 };
+  return items.map((it, i) => [it, i]).sort((a, b) => rank[roleOf(a[0])] - rank[roleOf(b[0])] || a[1] - b[1]).map(([it]) => it);
+}
+
+// Rusttijden om uit te kiezen (seconden). Er is geen "standaard"-keuze: je ziet altijd de echte tijd.
+export const REST_OPTIONS = [0, 30, 60, 90, 120, 150, 180, 240];
+export const restOptions = (current) => (REST_OPTIONS.includes(current) ? REST_OPTIONS : [...REST_OPTIONS, current].sort((a, b) => a - b));
+export const restLabel = (v) => (v === 0 ? "Geen" : time(v));
+
 export function exMeta(ex) {
   if (!ex) return "";
   return [ex.equip, ex.group].filter(Boolean).join(" · ");

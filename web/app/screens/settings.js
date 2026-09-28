@@ -52,7 +52,7 @@ export function Settings({ ctx }) {
     <div class="scroll">
       <div class="section first">
         <div class="title">Training</div>
-        <div class="caption" style=${{ margin: "12px 0 8px" }}>Standaard rusttijd</div>
+        <div class="caption" style=${{ margin: "12px 0 8px" }}>Rusttijd voor nieuwe oefeningen</div>
         <div class="chips">${REST_OPTIONS.map((v) => html`<${DS.Chip} key=${v} selected=${restDefault === v} onClick=${() => store.put("settings", "settings", { ...settings, restDefault: v })}>${time(v)}<//>`)}</div>
         <div class="sub" style=${{ marginTop: 8 }}>Per oefening kun je een eigen rusttijd kiezen.</div>
         <${Row} title="Oefeningen" sub=${`${ctx.exercises.length} in je bibliotheek`}><${DS.Chip} onClick=${() => ctx.go("library", { mode: "browse" })}>Bekijken<//><//>

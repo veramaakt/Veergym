@@ -1,11 +1,10 @@
 import { html, DS, FILLS, pastel, useEffect, useState, Icon } from "../ui.js";
 import * as store from "../store.js";
-import { TYPES, WEEKDAYS, num, time, exMeta, hasValue } from "../logic.js";
+import { TYPES, WEEKDAYS, num, time, exMeta, hasValue, ROLES, roleOf, sortByRole, restOptions, restLabel } from "../logic.js";
+import { restDefault } from "../session.js";
 
-const REST_OPTIONS = [null, 0, 30, 60, 90, 120, 180, 240];
 // Iconen uit het design system die passen bij een schema.
 const SCHEMA_ICONS = ["dumbbell", "trend", "bars", "radar", "repeat", "clock", "calendar", "home", "scale"];
-const restLabel = (v) => (v === null ? "Standaard" : v === 0 ? "Geen" : time(v));
 
 function parse(field, text) {
   const t = String(text).trim().replace(",", ".");
@@ -19,6 +18,13 @@ function parse(field, text) {
 }
 const show = (field, v) => (!hasValue(v) ? "" : field.time ? time(v) : num(v));
 
+function RoleSheet({ ctx, current, onPick }) {
+  return html`<div>
+    <div class="title">Onderdeel van het schema</div>
+    <div class="chips" style=${{ marginTop: 12 }}>${ROLES.map((r) => html`<${DS.Chip} key=${r.id} selected=${current === r.id} onClick=${() => { onPick(r.id); ctx.closeSheet(); }}>${r.label}<//>`)}</div>
+  </div>`;
+}
+
 function DeleteSheet({ ctx, id }) {
   return html`<div>
     <div class="title">Schema verwijderen?</div>
@@ -28,6 +34,46 @@ function DeleteSheet({ ctx, id }) {
       <div class="flex1"></div>
       <${DS.Button} onClick=${() => { store.remove(id); ctx.closeSheet(); ctx.tab("home"); }}>Verwijderen<//>
     </div>
+  </div>`;
+}
+
+function ItemEditor({ ctx, it, ii, canUp, colorIdx, setItems }) {
+  const ex = ctx.exById[it.exercise] || { name: "Onbekende oefening" };
+  const fields = TYPES[ex.type || "kg"].fields;
+  const sets = it.sets || [];
+  const rest = it.rest ?? ex.rest ?? restDefault();
+  const role = ROLES.find((r) => r.id === roleOf(it));
+  return html`<div style=${{ borderTop: "1px solid var(--border)", padding: "14px 0 6px", marginTop: 10 }}>
+    <div class="row">
+      <${DS.IconBadge} icon="dumbbell" size=${34} fill=${FILLS[colorIdx % FILLS.length]} color="#211a12" />
+      <div class="flex1">
+        <div class="body">${ex.name}</div>
+        <div class="sub">${exMeta(ex)}</div>
+      </div>
+      ${canUp && html`<button type="button" class="iconbtn" aria-label="Omhoog" onClick=${() => setItems((x) => {
+        // Wissel met de vorige oefening binnen hetzelfde onderdeel.
+        let j = ii - 1;
+        while (j >= 0 && roleOf(x[j]) !== roleOf(x[ii])) j--;
+        if (j >= 0) [x[j], x[ii]] = [x[ii], x[j]];
+      })}><span style=${{ transform: "rotate(180deg)", display: "grid" }}>${Icon("chevron-down", 18)}</span></button>`}
+      <button type="button" class="iconbtn" aria-label="Oefening verwijderen" onClick=${() => setItems((x) => { x.splice(ii, 1); })}>${Icon("close", 16)}</button>
+    </div>
+    <button type="button" class="tag" style=${{ marginTop: 8, background: "transparent", cursor: "pointer", fontFamily: "inherit" }}
+      onClick=${() => ctx.sheet(html`<${RoleSheet} ctx=${ctx} current=${role.id} onPick=${(r) => setItems((x) => { if (r === "main") delete x[ii].role; else x[ii].role = r; })} />`)}>Verplaatsen</button>
+    <div class="caption" style=${{ display: "flex", gap: 10, marginTop: 12, paddingBottom: 4 }}>
+      <span style=${{ width: 22, flex: "none" }}>#</span>
+      ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center" }}>${ex.type === "assist" && f.k === "w" ? "Assist" : f.label}</span>`)}
+      <span style=${{ width: 44, flex: "none" }}></span>
+    </div>
+    ${sets.map((s, si) => html`<div key=${si + "/" + sets.length} style=${{ display: "flex", gap: 10, alignItems: "center", padding: "4px 0" }}>
+      <span style=${{ width: 22, flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 800, color: "var(--ink-soft)" }}>${si + 1}</span>
+      ${fields.map((f) => html`<input key=${f.k} class="cell" inputMode=${f.time ? "text" : "decimal"} placeholder=${f.time ? "0:00" : "–"} defaultValue=${show(f, s[f.k])}
+        onChange=${(e) => setItems((x) => { x[ii].sets[si][f.k] = parse(f, e.target.value); })} />`)}
+      <button type="button" class="iconbtn" aria-label="Set verwijderen" onClick=${() => setItems((x) => { x[ii].sets.splice(si, 1); })}>${Icon("close", 14)}</button>
+    </div>`)}
+    <${DS.Button} variant="quiet" onClick=${() => setItems((x) => { const last = x[ii].sets[x[ii].sets.length - 1] || {}; x[ii].sets = [...(x[ii].sets || []), { ...last }]; })}>${Icon("plus", 14)}Set toevoegen<//>
+    <div class="caption" style=${{ margin: "6px 0 8px" }}>Rust na elke set</div>
+    <div class="chips scrollx">${restOptions(rest).map((v) => html`<div key=${v} style=${{ flex: "none" }}><${DS.Chip} selected=${rest === v} onClick=${() => setItems((x) => { x[ii].rest = v; })}>${restLabel(v)}<//></div>`)}</div>
   </div>`;
 }
 
@@ -42,7 +88,7 @@ export function TemplateEditor({ ctx, params }) {
   const setItems = (fn) => {
     const copy = JSON.parse(JSON.stringify(items));
     fn(copy);
-    set({ items: copy });
+    set({ items: sortByRole(copy) });
   };
   const close = () => {
     if (params.isNew && !String(t.name || "").trim() && !items.length) store.remove(t.id);
@@ -80,44 +126,18 @@ export function TemplateEditor({ ctx, params }) {
         </div>`}
       </div>
 
-      <div class="section">
-        <div class="title">Oefeningen</div>
-        ${!items.length && html`<${DS.EmptyState} icon="dumbbell" title="Nog geen oefeningen" body="Voeg oefeningen toe uit de bibliotheek of maak een eigen oefening." />`}
-        ${items.map((it, ii) => {
-          const ex = ctx.exById[it.exercise] || { name: "Onbekende oefening" };
-          const fields = TYPES[ex.type || "kg"].fields;
-          const sets = it.sets || [];
-          return html`<div key=${ii + ":" + it.exercise} style=${{ borderTop: "1px solid var(--border)", padding: "14px 0 6px", marginTop: 10 }}>
-            <div class="row">
-              <${DS.IconBadge} icon="dumbbell" size=${34} fill=${FILLS[ii % FILLS.length]} color="#211a12" />
-              <div class="flex1">
-                <div class="body">${ex.name}</div>
-                <div class="sub">${exMeta(ex)}</div>
-              </div>
-              ${ii > 0 && html`<button type="button" class="iconbtn" aria-label="Omhoog" onClick=${() => setItems((x) => { [x[ii - 1], x[ii]] = [x[ii], x[ii - 1]]; })}
-                ><span style=${{ transform: "rotate(180deg)", display: "grid" }}>${Icon("chevron-down", 18)}</span></button>`}
-              <button type="button" class="iconbtn" aria-label="Oefening verwijderen" onClick=${() => setItems((x) => { x.splice(ii, 1); })}>${Icon("close", 16)}</button>
-            </div>
-            <div class="caption" style=${{ display: "flex", gap: 10, marginTop: 12, paddingBottom: 4 }}>
-              <span style=${{ width: 22, flex: "none" }}>#</span>
-              ${fields.map((f) => html`<span key=${f.k} class="flex1" style=${{ textAlign: "center" }}>${ex.type === "assist" && f.k === "w" ? "Assist" : f.label}</span>`)}
-              <span style=${{ width: 44, flex: "none" }}></span>
-            </div>
-            ${sets.map((s, si) => html`<div key=${si + "/" + sets.length} style=${{ display: "flex", gap: 10, alignItems: "center", padding: "4px 0" }}>
-              <span style=${{ width: 22, flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 800, color: "var(--ink-soft)" }}>${si + 1}</span>
-              ${fields.map((f) => html`<input key=${f.k} class="cell" inputMode=${f.time ? "text" : "decimal"} placeholder=${f.time ? "0:00" : "–"} defaultValue=${show(f, s[f.k])}
-                onChange=${(e) => setItems((x) => { x[ii].sets[si][f.k] = parse(f, e.target.value); })} />`)}
-              <button type="button" class="iconbtn" aria-label="Set verwijderen" onClick=${() => setItems((x) => { x[ii].sets.splice(si, 1); })}>${Icon("close", 14)}</button>
-            </div>`)}
-            <${DS.Button} variant="quiet" onClick=${() => setItems((x) => { const last = x[ii].sets[x[ii].sets.length - 1] || {}; x[ii].sets = [...(x[ii].sets || []), { ...last }]; })}>${Icon("plus", 14)}Set toevoegen<//>
-            <div class="caption" style=${{ margin: "6px 0 8px" }}>Rust na elke set</div>
-            <div class="chips scrollx">${REST_OPTIONS.map((v) => html`<div key=${String(v)} style=${{ flex: "none" }}><${DS.Chip} selected=${(it.rest ?? null) === v} onClick=${() => setItems((x) => { x[ii].rest = v; })}>${restLabel(v)}<//></div>`)}</div>
-          </div>`;
-        })}
-        <div style=${{ borderTop: "1px solid var(--border)", marginTop: 8, paddingTop: 10 }}>
-          <${DS.Button} variant="quiet" onClick=${() => ctx.go("library", { mode: "add-template", templateId: t.id })}>${Icon("plus", 14)}Oefening toevoegen<//>
-        </div>
-      </div>
+      ${ROLES.map((role) => {
+        const group = items.map((it, ii) => [it, ii]).filter(([it]) => roleOf(it) === role.id);
+        const main = role.id === "main";
+        return html`<div key=${role.id} class="section">
+          <div class="title">${role.label}</div>
+          ${!group.length && html`<div class="sub" style=${{ marginTop: 4 }}>${main ? "Nog geen oefeningen. Voeg ze toe uit de bibliotheek of maak een eigen oefening." : role.id === "warmup" ? "Bijv. 5 minuten fietsen of mobiliteit. Optioneel." : "Bijv. rekken of uitlopen. Optioneel."}</div>`}
+          ${group.map(([it, ii], gi) => html`<${ItemEditor} key=${ii + ":" + it.exercise} ctx=${ctx} it=${it} ii=${ii} canUp=${gi > 0} colorIdx=${ii} setItems=${setItems} />`)}
+          <div style=${{ borderTop: group.length ? "1px solid var(--border)" : "none", marginTop: 8, paddingTop: 10 }}>
+            <${DS.Button} variant="quiet" onClick=${() => ctx.go("library", { mode: "add-template", templateId: t.id, role: role.id })}>${Icon("plus", 14)}${role.add}<//>
+          </div>
+        </div>`;
+      })}
 
       <div class="section">
         <${DS.Button} style=${{ width: "100%" }} onClick=${close}>Klaar<//>

@@ -25,11 +25,13 @@ export function newItem(exerciseId, workouts, rest = null) {
 
 export function startWorkout(template, workouts) {
   const items = template
-    ? (template.items || []).map((it) =>
-        it.sets && it.sets.length
+    ? (template.items || []).map((it) => {
+        const item = it.sets && it.sets.length
           ? { exercise: it.exercise, rest: it.rest ?? null, sets: it.sets.map(blankSet) }
-          : newItem(it.exercise, workouts, it.rest ?? null)
-      )
+          : newItem(it.exercise, workouts, it.rest ?? null);
+        if (it.role && it.role !== "main") item.role = it.role;
+        return item;
+      })
     : [];
   const a = { id: store.uid(), template: template ? template.id : null, title: template ? template.name : "Vrije training", start: Date.now(), exIdx: 0, restEnd: 0, restTotal: 0, items };
   saveActive(a);
@@ -48,6 +50,7 @@ export function finishWorkout(a) {
   const items = a.items
     .map((it) => ({
       exercise: it.exercise,
+      ...(it.role && it.role !== "main" ? { role: it.role } : {}),
       sets: it.sets
         .filter((s) => s.done)
         .map(({ done, ...s }) => {

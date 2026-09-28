@@ -1,34 +1,49 @@
 import { html, DS, useState, Icon } from "../ui.js";
 import * as store from "../store.js";
-import { TYPES, GROUPS, exMeta } from "../logic.js";
+import { TYPES, GROUPS, exMeta, sortByRole, ROLES } from "../logic.js";
 import { getActive, saveActive, newItem } from "../session.js";
 
-const TITLES = { browse: "Oefeningen", "add-template": "Oefening toevoegen", "add-workout": "Oefening toevoegen", swap: "Oefening wisselen" };
+const TITLES = { browse: "Oefeningen", "add-template": "Oefeningen toevoegen", "add-workout": "Oefeningen toevoegen", swap: "Oefening wisselen" };
 
-function choose(ctx, params, ex) {
-  const mode = params.mode || "browse";
-  if (mode === "browse") return ctx.go("exercise", { id: ex.id });
+/** Eén of meer oefeningen toevoegen aan een schema of de lopende workout (in de volgorde van aantikken). */
+function addMany(ctx, params, ids) {
+  const mode = params.mode;
   if (mode === "add-template") {
     const t = store.get(params.templateId);
     if (t) {
-      const item = newItem(ex.id, ctx.workouts);
-      store.update(t.id, { items: [...(t.items || []), { exercise: ex.id, rest: null, sets: item.sets.map(() => ({})) }] });
+      const role = params.role && params.role !== "main" ? { role: params.role } : {};
+      // Warming-up en cooling-down: standaard één set (bijv. 5 minuten fietsen).
+      const added = ids.map((id) => ({ exercise: id, rest: null, sets: role.role ? [{}] : newItem(id, ctx.workouts).sets.map(() => ({})), ...role }));
+      store.update(t.id, { items: sortByRole([...(t.items || []), ...added]) });
     }
-  } else {
+  } else if (mode === "add-workout") {
     const a = getActive();
     if (a) {
-      const item = newItem(ex.id, ctx.workouts);
-      if (mode === "swap") {
-        item.rest = a.items[params.itemIdx]?.rest ?? null;
-        a.items[params.itemIdx] = item;
-      } else {
-        a.items.push(item);
-        a.exIdx = a.items.length - 1;
-      }
+      const first = a.items.length;
+      for (const id of ids) a.items.push(newItem(id, ctx.workouts));
+      a.exIdx = first;
       saveActive({ ...a });
     }
   }
   ctx.back();
+}
+
+function choose(ctx, params, ex) {
+  const mode = params.mode || "browse";
+  if (mode === "browse") return ctx.go("exercise", { id: ex.id });
+  if (mode === "swap") {
+    const a = getActive();
+    if (a) {
+      const item = newItem(ex.id, ctx.workouts);
+      const old = a.items[params.itemIdx] || {};
+      item.rest = old.rest ?? null;
+      if (old.role) item.role = old.role;
+      a.items[params.itemIdx] = item;
+      saveActive({ ...a });
+    }
+    return ctx.back();
+  }
+  addMany(ctx, params, [ex.id]);
 }
 
 export function CustomExerciseSheet({ ctx, initialName = "", onCreated }) {
@@ -60,6 +75,9 @@ export function CustomExerciseSheet({ ctx, initialName = "", onCreated }) {
 
 export function Library({ ctx, params }) {
   const mode = params.mode || "browse";
+  const multi = mode === "add-template" || mode === "add-workout";
+  const [picked, setPicked] = useState([]);
+  const toggle = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const [q, setQ] = useState("");
   const [group, setGroup] = useState("Alle");
   const needle = q.trim().toLowerCase();
@@ -68,10 +86,12 @@ export function Library({ ctx, params }) {
     .filter((e) => !needle || e.name.toLowerCase().includes(needle) || (e.group || "").toLowerCase().includes(needle))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const custom = () => ctx.sheet(html`<${CustomExerciseSheet} ctx=${ctx} initialName=${q} onCreated=${(ex) => choose(ctx, params, ex)} />`);
+  const custom = () => ctx.sheet(html`<${CustomExerciseSheet} ctx=${ctx} initialName=${q} onCreated=${(ex) => (multi ? setPicked((p) => [...p, ex.id]) : choose(ctx, params, ex))} />`);
+  const roleName = mode === "add-template" && params.role && params.role !== "main" ? ROLES.find((r) => r.id === params.role)?.label : null;
 
   return html`<div class="fill">
-    <${DS.TopBar} title=${TITLES[mode]} leading="close" onLeading=${ctx.back} />
+    <${DS.TopBar} title=${roleName ? roleName + " toevoegen" : TITLES[mode]} leading="close" onLeading=${ctx.back} />
+    ${multi && html`<div class="sub" style=${{ padding: "0 16px 8px" }}>Tik de oefeningen aan die je wilt toevoegen, in de volgorde die je wilt.</div>`}
     <div style=${{ padding: "0 16px" }}>
       <div class="row" style=${{ gap: 8, background: "var(--surface-tint)", borderRadius: "var(--radius-md)", padding: "0 12px", color: "var(--ink-soft)" }}>
         ${Icon("search", 17)}
@@ -83,19 +103,28 @@ export function Library({ ctx, params }) {
       </div>
     </div>
     <div class="scroll" style=${{ paddingTop: 4 }}>
-      ${rows.map((e) => html`<button type="button" key=${e.id} class="plainbtn" onClick=${() => choose(ctx, params, e)}
-        style=${{ width: "100%", minHeight: 56, display: "flex", alignItems: "center", gap: 12, borderTop: "1px solid var(--border)", padding: "8px 0" }}>
-        <${DS.IconBadge} icon="dumbbell" size=${34} />
-        <span class="flex1" style=${{ display: "flex", flexDirection: "column" }}>
-          <span class="body">${e.name}</span>
-          <span class="sub">${exMeta(e)}${e.type === "assist" ? " · assisted" : ""}</span>
-        </span>
-        ${mode !== "browse" && html`<span style=${{ color: "var(--ink-soft)", display: "grid", placeItems: "center", width: 28 }}>${Icon("plus", 16)}</span>`}
-      </button>`)}
+      ${rows.map((e) => {
+        const n = picked.indexOf(e.id) + 1;
+        return html`<button type="button" key=${e.id} class="plainbtn" onClick=${() => (multi ? toggle(e.id) : choose(ctx, params, e))} aria-pressed=${multi ? n > 0 : undefined}
+          style=${{ width: "100%", minHeight: 56, display: "flex", alignItems: "center", gap: 12, borderTop: "1px solid var(--border)", padding: "8px 0" }}>
+          <${DS.IconBadge} icon="dumbbell" size=${34} />
+          <span class="flex1" style=${{ display: "flex", flexDirection: "column" }}>
+            <span class="body">${e.name}</span>
+            <span class="sub">${exMeta(e)}${e.type === "assist" ? " · assisted" : ""}</span>
+          </span>
+          ${multi
+            ? html`<span style=${{ width: 28, height: 28, borderRadius: "50%", display: "grid", placeItems: "center", flex: "none", fontSize: "var(--body-sm-size)", fontWeight: 800,
+                background: n ? "var(--ink)" : "transparent", color: n ? "var(--surface-primary)" : "var(--ink-soft)", border: n ? "none" : "1.5px solid var(--border)" }}>${n || ""}</span>`
+            : mode !== "browse" && html`<span style=${{ color: "var(--ink-soft)", display: "grid", placeItems: "center", width: 28 }}>${Icon("plus", 16)}</span>`}
+        </button>`;
+      })}
       ${!rows.length && html`<${DS.EmptyState} icon="search" title="Niets gevonden" body="Maak hem aan als eigen oefening." />`}
       <div style=${{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
         <${DS.Button} variant="quiet" onClick=${custom}>${Icon("plus", 14)}Eigen oefening<//>
       </div>
     </div>
+    ${multi && picked.length > 0 && html`<div class="dock" style=${{ paddingTop: 10, borderTop: "1px solid var(--border)" }}>
+      <${DS.Button} style=${{ width: "100%" }} onClick=${() => addMany(ctx, params, picked)}>${picked.length === 1 ? "1 oefening toevoegen" : picked.length + " oefeningen toevoegen"}<//>
+    </div>`}
   </div>`;
 }

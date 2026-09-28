@@ -1,6 +1,6 @@
 import { html, DS, Fragment, FILLS, useState, useEffect, useRef, useTick, Icon } from "../ui.js";
 import * as store from "../store.js";
-import { TYPES, SET_TYPES, num, time, kg, fmtSet, exMeta, hasValue, previousSets, exerciseHistory, prsFor, volume } from "../logic.js";
+import { TYPES, SET_TYPES, num, time, kg, fmtSet, exMeta, hasValue, previousSets, exerciseHistory, prsFor, volume, roleOf, roleLabel, restOptions, restLabel } from "../logic.js";
 import { getActive, saveActive, fillFromPrevious, finishWorkout, restDefault } from "../session.js";
 
 /** Wijzig de lopende workout; leest altijd de nieuwste versie. */
@@ -137,13 +137,12 @@ function NoteSheet({ ctx, exerciseId }) {
   </div>`;
 }
 
-const REST_OPTIONS = [null, 0, 30, 60, 90, 120, 150, 180, 240];
-const restLabel = (v) => (v === null ? "Standaard" : v === 0 ? "Geen" : time(v));
 
 function ExMenu({ ctx, itemIdx }) {
   const a = getActive();
   const item = a.items[itemIdx];
   const ex = ctx.exById[item.exercise] || {};
+  const rest = item.rest ?? ex.rest ?? restDefault();
   const go = (fn) => () => { ctx.closeSheet(); fn(); };
   const rows = [
     { icon: "trend", label: "Spieren en geschiedenis", go: go(() => ctx.go("exercise", { id: item.exercise })) },
@@ -159,7 +158,7 @@ function ExMenu({ ctx, itemIdx }) {
       <span style=${{ color: "var(--ink-soft)", display: "grid", placeItems: "center", width: 24 }}>${Icon(o.icon, 18)}</span>${o.label}
     </button>`)}
     <div class="label">Rust na elke set</div>
-    <div class="chips">${REST_OPTIONS.map((v) => html`<${DS.Chip} key=${String(v)} selected=${(item.rest ?? null) === v} onClick=${() => { mutate((x) => { x.items[itemIdx].rest = v; }); ctx.closeSheet(); }}>${restLabel(v)}<//>`)}</div>
+    <div class="chips">${restOptions(rest).map((v) => html`<${DS.Chip} key=${v} selected=${rest === v} onClick=${() => { mutate((x) => { x.items[itemIdx].rest = v; }); ctx.closeSheet(); }}>${restLabel(v)}<//>`)}</div>
   </div>`;
 }
 
@@ -252,7 +251,7 @@ export function Workout({ ctx }) {
         ${ctx.sync.mode === "offline" && html`<div style=${{ marginTop: 10 }}><${DS.SyncStatus} mode="offline" /></div>`}
       </div>
       <div style=${{ borderTop: "1px solid var(--border)", paddingTop: 14 }}>
-        <div class="caption" style=${{ marginBottom: 10 }}>Oefening ${idx + 1} van ${a.items.length}</div>
+        <div class="caption" style=${{ marginBottom: 10 }}>${roleOf(item) !== "main" ? html`<span class="tag" style=${{ marginRight: 8 }}>${roleLabel(item)}</span>` : null}Oefening ${idx + 1} van ${a.items.length}</div>
         <div class="on-pastel-badge"><${DS.ExerciseHeader} name=${ex.name} meta=${exMeta(ex)} target=${ex.target ? "Doel " + ex.target : null} note=${ex.note || null}
           badgeFill=${FILLS[idx % FILLS.length]} onMenu=${() => ctx.sheet(html`<${ExMenu} ctx=${ctx} itemIdx=${idx} />`)} /></div>
         ${type === "assist" && html`<div class="sub" style=${{ marginTop: 8 }}>Het gewicht is de assist. Lager is beter.</div>`}
@@ -279,7 +278,8 @@ export function Workout({ ctx }) {
           ${a.items.map((it, i) => {
             if (i === idx) return null;
             const allDone = it.sets.length && it.sets.every((s) => s.done);
-            return html`<${DS.NextUpPill} key=${i} label=${ctx.exById[it.exercise]?.name || "?"} fill=${allDone ? "var(--accent-mint-soft)" : FILLS[i % FILLS.length]} color="#211a12"
+            const name = ctx.exById[it.exercise]?.name || "?";
+            return html`<${DS.NextUpPill} key=${i} label=${roleOf(it) === "main" ? name : roleLabel(it) + ": " + name} fill=${allDone ? "var(--accent-mint-soft)" : FILLS[i % FILLS.length]} color="#211a12"
               onClick=${() => mutate((x) => { x.exIdx = i; })} />`;
           })}
         </div>
