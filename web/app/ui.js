@@ -34,6 +34,21 @@ export function useTick(active, ms = 250) {
   }, [active, ms]);
 }
 
+/** Zoekveld met een kruisje rechts om de tekst in één keer te wissen. */
+export function SearchField({ value, onChange, placeholder = "Zoek", style }) {
+  const input = useRef(null);
+  return html`<div class="row" style=${{ gap: 8, background: "var(--surface-tint)", borderRadius: "var(--radius-md)", padding: "0 0 0 12px", color: "var(--ink-soft)", ...style }}>
+    ${Icon("search", 17)}
+    <input ref=${input} value=${value} onInput=${(e) => onChange(e.target.value)} placeholder=${placeholder}
+      style=${{ flex: 1, minWidth: 0, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: "var(--body-md-size)", fontWeight: 700, outline: "none", color: "var(--ink)" }} />
+    ${value
+      ? html`<button type="button" class="iconbtn" aria-label="Zoektekst wissen" onClick=${() => { onChange(""); input.current && input.current.focus(); }}>
+          <span style=${{ width: 22, height: 22, borderRadius: "50%", background: "var(--ink-soft)", color: "var(--surface-primary)", display: "grid", placeItems: "center" }}>${Icon("close", 12)}</span>
+        </button>`
+      : html`<span style=${{ width: 12, flex: "none" }}></span>`}
+  </div>`;
+}
+
 /** Aan/uit-schuifje (44px tikvlak). */
 export function Switch({ on, onChange, label }) {
   return html`<button type="button" role="switch" aria-checked=${on} aria-label=${label} onClick=${() => onChange(!on)}

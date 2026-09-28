@@ -1,4 +1,4 @@
-import { html, DS, useState, Icon } from "../ui.js";
+import { html, DS, useState, Icon, SearchField } from "../ui.js";
 import * as store from "../store.js";
 import { TYPES, GROUPS, exMeta, sortByRole, ROLES } from "../logic.js";
 import { getActive, saveActive, newItem } from "../session.js";
@@ -93,11 +93,7 @@ export function Library({ ctx, params }) {
     <${DS.TopBar} title=${roleName ? roleName + " toevoegen" : TITLES[mode]} leading="close" onLeading=${ctx.back} />
     ${multi && html`<div class="sub" style=${{ padding: "0 16px 8px" }}>Tik de oefeningen aan die je wilt toevoegen, in de volgorde die je wilt.</div>`}
     <div style=${{ padding: "0 16px" }}>
-      <div class="row" style=${{ gap: 8, background: "var(--surface-tint)", borderRadius: "var(--radius-md)", padding: "0 12px", color: "var(--ink-soft)" }}>
-        ${Icon("search", 17)}
-        <input value=${q} onInput=${(e) => setQ(e.target.value)} placeholder="Zoek oefening"
-          style=${{ flex: 1, minWidth: 0, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: "var(--body-md-size)", fontWeight: 700, outline: "none" }} />
-      </div>
+      <${SearchField} value=${q} onChange=${setQ} placeholder="Zoek oefening" />
       <div class="chips scrollx" style=${{ margin: "10px -16px 0 0", paddingBottom: 6 }}>
         ${["Alle", ...GROUPS, "Eigen", ...(ctx.exercises.some((e) => !GROUPS.includes(e.group)) ? ["Overig"] : [])].map((g) => html`<div key=${g} style=${{ flex: "none" }}><${DS.Chip} selected=${group === g} onClick=${() => setGroup(g)}>${g}<//></div>`)}
       </div>

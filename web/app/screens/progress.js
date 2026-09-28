@@ -1,4 +1,4 @@
-import { html, DS, useState, useMemo, Icon } from "../ui.js";
+import { html, DS, useState, useMemo, Icon, SearchField } from "../ui.js";
 import * as store from "../store.js";
 import { kg, dateNum, doneWorkouts, volume } from "../logic.js";
 import { inRange, strengthCharts, volumeBuckets, countPrs, formatMetric, METRICS, MONTHS_LONG, monthOf, shiftMonth, groupColor } from "../stats.js";
@@ -67,11 +67,7 @@ export function Progress({ ctx }) {
       <div class="title">Kracht per oefening</div>
       <div class="sub">Oefeningen die je in deze periode minstens 2× deed</div>
     </div>
-    ${charts.length > SHOW && (all || needle) && html`<div class="row" style=${{ gap: 8, marginTop: 12, background: "var(--surface-tint)", borderRadius: "var(--radius-md)", padding: "0 12px", color: "var(--ink-soft)" }}>
-      ${Icon("search", 17)}
-      <input value=${q} onInput=${(e) => setQ(e.target.value)} placeholder="Zoek oefening"
-        style=${{ flex: 1, minWidth: 0, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: "var(--body-md-size)", fontWeight: 700, outline: "none" }} />
-    </div>`}
+    ${charts.length > SHOW && (all || needle) && html`<${SearchField} value=${q} onChange=${setQ} placeholder="Zoek oefening" style=${{ marginTop: 12 }} />`}
     ${!charts.length && html`<div class="sub" style=${{ marginTop: 12 }}>Nog geen oefening twee keer gedaan in deze periode. Kies een langere periode.</div>`}
     ${shown.map((c) => html`<${StrengthChart} key=${c.id + c.metric} ctx=${ctx} c=${c} onMetric=${(m) => setMetric(c.id, m)} />`)}
     ${charts.length > SHOW && !needle && html`<div style=${{ marginTop: 12 }}>
