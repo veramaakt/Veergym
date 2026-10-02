@@ -38,11 +38,15 @@ export async function syncNow() {
   running = true;
   set({ mode: "syncing" });
   const dirty = store.dirtyRecords().map(({ id, kind, data, updated_at, deleted }) => ({ id, kind, data, updated_at, deleted }));
+  // Mac uit? Dan blijft het verzoek via Tailscale hangen; na 15 seconden opgeven en later opnieuw.
+  const abort = new AbortController();
+  const timeout = setTimeout(() => abort.abort(), 15000);
   try {
     const res = await fetch("api/sync", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
       body: JSON.stringify({ cursor: store.getMeta("cursor", 0), changes: dirty }),
+      signal: abort.signal,
     });
     if (res.status === 401) {
       store.setMeta("token", null);
@@ -56,8 +60,9 @@ export async function syncNow() {
     store.setMeta("cursor", body.cursor);
     set({ mode: "synced", at: Date.now(), error: null });
   } catch (e) {
-    set({ mode: "offline", error: String(e.message || e) });
+    set({ mode: "offline", error: e.name === "AbortError" ? "Je Mac is niet bereikbaar" : String(e.message || e) });
   } finally {
+    clearTimeout(timeout);
     running = false;
     if (again || store.dirtyRecords().length) {
       again = false;

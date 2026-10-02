@@ -1,6 +1,6 @@
 // Service worker: bewaart de app op je telefoon, zodat hij zonder bereik opent.
 // Verhoog VERSION na een update, dan haalt de app de nieuwe bestanden op.
-const VERSION = "veergym-v10";
+const VERSION = "veergym-v11";
 const SHELL = [
   "./",
   "index.html",
@@ -65,11 +65,32 @@ self.addEventListener("activate", (e) => {
 
 // App-bestanden: eerst het netwerk (altijd de nieuwste versie), zonder bereik uit de cache.
 // De API gaat nooit via de cache.
+// Staat je Mac uit, dan mislukt een verzoek via Tailscale niet meteen maar blijft het hangen.
+// Daarom: na 2,5 seconden zonder antwoord de bewaarde versie, en de halve minuut daarna
+// meteen uit de cache (anders wacht elk bestand opnieuw).
+const TIMEOUT = 2500;
+let offlineUntil = 0;
+
+function fromCache(request) {
+  return caches.match(request, { ignoreSearch: true }).then((r) => r || caches.match("index.html"));
+}
+
+function fromNetwork(request) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timeout")), TIMEOUT);
+    fetch(request).then((res) => { clearTimeout(timer); resolve(res); }, (err) => { clearTimeout(timer); reject(err); });
+  });
+}
+
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin || url.pathname.includes("/api/")) return;
+  if (Date.now() < offlineUntil) {
+    e.respondWith(fromCache(e.request).then((r) => r || fetch(e.request)));
+    return;
+  }
   e.respondWith(
-    fetch(e.request)
+    fromNetwork(e.request)
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();
@@ -77,6 +98,9 @@ self.addEventListener("fetch", (e) => {
         }
         return res;
       })
-      .catch(() => caches.match(e.request, { ignoreSearch: true }).then((r) => r || caches.match("index.html")))
+      .catch(() => {
+        offlineUntil = Date.now() + 30000;
+        return fromCache(e.request);
+      })
   );
 });
